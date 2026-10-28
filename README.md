@@ -8,9 +8,9 @@
 
 | No | NIM | Nama | Alokasi Dokumen |
 |---|---|---|---|
-| 1 | *[NIM Samuel]* | Samuel Natanael | `PDF/Sam/` (5 Dokumen) |
-| 2 | *[NIM Indira]* | Indira | `PDF/Indira/` (5 Dokumen) |
-| 3 | *[NIM NicSap]* | NicSap | `PDF/NicSap/` (5 Dokumen) |
+| 1 | 71231050 | Samuel Natanael | `PDF/Sam/` (5 Dokumen) |
+| 2 | 71241154 | Indira Mai Narwastu | `PDF/Indira/` (5 Dokumen) |
+| 3 | 71231021 | Christian Nicholas Saputra | `PDF/NicSap/` (5 Dokumen) |
 
 ---
 

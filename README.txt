@@ -6,14 +6,12 @@
 
 1. IDENTITAS ANGGOTA KELOMPOK
 --------------------------------------------------------------------------------
-Silakan lengkapi NIM dan Nama anggota kelompok di bawah ini sebelum dikumpulkan:
-
-1. NIM  : [Isi NIM Samuel]
+1. NIM  : 71231050
    Nama : Samuel Natanael (Folder: PDF/Sam/ - 5 Dokumen)
-2. NIM  : [Isi NIM Indira]
-   Nama : Indira (Folder: PDF/Indira/ - 5 Dokumen)
-3. NIM  : [Isi NIM NicSap]
-   Nama : NicSap (Folder: PDF/NicSap/ - 5 Dokumen)
+2. NIM  : 71241154
+   Nama : Indira Mai Narwastu (Folder: PDF/Indira/ - 5 Dokumen)
+3. NIM  : 71231021
+   Nama : Christian Nicholas Saputra (Folder: PDF/NicSap/ - 5 Dokumen)
 
 
 2. DAFTAR DOKUMEN KORPUS & SUMBER (URL / DOI)
