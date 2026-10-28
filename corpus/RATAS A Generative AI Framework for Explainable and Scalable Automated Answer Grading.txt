@@ -1,0 +1,939 @@
+RATAS: A Generative AI Framework for Explainable
+and Scalable Automated Answer Grading
+Masoud Safilian1, Amin Beheshti1, and Stephen Elbourn2
+1 Macquarie University, Sydney, Australia
+masoud.safilian@hdr.mq.edu.au
+amin.beheshti@mq.edu.au
+2 ITIC Company
+stephen.elbourn@itic.com.au
+Abstract. Automated answer grading is a critical challenge in educational
+technology, with the potential to streamline assessment processes, ensure grad-
+ing consistency, and provide timely feedback to students. However, existing
+approaches are often constrained to specific exam formats, lack interpretability
+in score assignment, and struggle with real-world applicability across diverse
+subjects and assessment types. To address these limitations, we introduce
+RATAS (Rubric Automated Tree-based Answer Scoring), a novel framework
+that leverages state-of-the-art generative AI models for rubric-based grading of
+textual responses. RATAS is designed to support a wide range of grading rubrics,
+enable subject-agnostic evaluation, and generate structured, explainable ratio-
+nales for assigned scores. We formalize the automatic grading task through a
+mathematical framework tailored to rubric-based assessment and present an
+architecture capable of handling complex, real-world exam structures. To rig-
+orously evaluate our approach, we construct a unique, contextualized dataset
+derived from real-world project-based courses, encompassing diverse response
+formats and varying levels of complexity. Empirical results demonstrate that
+RATAS achieves high reliability and accuracy in automated grading while pro-
+viding interpretable feedback that enhances transparency for both students
+and instructors. To advance research in this domain, we publicly release all
+code on https://github.com/datalab912/RATASv1.
+Keywords: Automated Grading · Rubric-Based Grading · Generative AI · Real
+Textual Exams · Rubric Contexulization.
+1
+Introduction
+Open-ended (OE) questions are integral to education, fostering critical thinking,
+creativity [1], and self-explanation [2]. Rubrics play a crucial role in ensuring fair
+and structured assessment of OE’s based exams, providing consistency in grading [3],
+and providing constructive feedback [4]. However, OE manual grading remains labor-
+intensive [5], error-prone, and inefficient, especially for large-scale assessments.
+Most research on automated grading focuses on short-answer grading, essay
+scoring, and writing evaluation [6], specifically targeting key narrative components
+arXiv:2505.23818v1  [cs.CL]  27 May 2025
+
+2
+M. Safilian and A. Beheshti
+of real-world exams. Automated Short Answer Grading (ASAG) methods are typi-
+cally restricted to responses ranging from a single phrase to a short paragraph [7],
+whereas the recently introduced Automatic Long Answer Grading (ALAG) has been
+evaluated on responses averaging 120 words [8]. Existing approaches face several
+challenges, including inadequate rubric integration [9], as most methods treat rubrics
+as unstructured lists of criteria [10]; limited generalizability across different exam
+subjects, requiring retraining for each new exam and struggling with complex grading
+structures; and a lack of explainability [11].
+In this paper, we formally define and mathematically formulate Rubric-Based
+Automatic Grading for Textual Exams (RAGT), codifying real-world rubric structures
+and scoring logic. RAGT presents a highly complex Natural Language Processing
+(NLP) challenge due to the diversity of exam types, the complexity of real-world
+rubrics, the open-ended nature of textual responses, and the scarcity of labeled data.
+Additionally, it requires generating structured, feedback-oriented rationales, further
+increasing its complexity.
+To address the limitations of existing methods, we introduce RATAS (Rubric Au-
+tomated Tree-based Answer Scoring), a novel framework leveraging state-of-the-art
+generative AI to enable accurate, subject-agnostic, and interpretable rubric-based
+grading. Over the past two decades, artificial intelligence (AI) has evolved from tra-
+ditional methods like combinatorial optimization [12] and sampling-based planning
+[13] to ML, NLP, and more recently, transformer architectures [14] and generative
+AI [15], which has gained significant traction in education [16]. Recent advances
+in foundation, transformer-based generative AI, and large language models (LLM)
+[17], despite their success in NLP tasks, have demonstrated suboptimal performance
+in ASAG, highlighting the need for a more structured approach to rubric-based
+automated grading [18].
+RATAS systematically contextualizes rubrics by generating a rubric-based tree,
+enhancing both answer analysis and scoring reliability. It decomposes the grading
+process into modular Downstream NLP Tasks (DNTs), enabling strong performance
+on longer answers, improving reliability, and providing structured feedback and
+reasoning. Additionally, it enhances adaptability across diverse exam formats while
+reducing complexity and minimizing training data requirements. RATAS also allows
+instructors to combine rubric criteria, streamlining rubric design. Achieving these
+objectives necessitates the design and development of effective DNTs tailored for
+RATG, integrating them into a robust architecture, properly adapting LLMs for each
+DNT, and implementing a flexible rubric-based scoring mechanism.
+Due to the lack of datasets for RATG, we evaluate RATAS using a real-world dataset
+we created from university-level project-based courses, consisting of longer answers
+than existing datasets. By implementing RATAS architecture and employing GPT-4o
+[19] for addressing DNTs in its lower layers, we compare its performance against
+direct GPT-4o usage and manual grading. Results show that RATAS significantly
+improves grading accuracy, interpretability, and scalability, reinforcing its potential
+as a robust solution for automated rubric-based assessment.
+
+Title Suppressed Due to Excessive Length
+3
+2
+Related Work
+Most research on automated grading has focused on ASAG, developed and evaluated
+on datasets with an average response length of fewer than 20 words, such as Beetle
+[20] and Texas 2011 [21]. One notable exception is [8], which considers longer
+answer grading on the RiceChem dataset (average answer length: 120 words) by
+framing grading as a textual entailment task, achieving approximately 65% accuracy
+on four questions. Among ASAG methods, neural network (NN) and deep learning
+approaches have shown strong performance, including siamese networks [22] and
+LSTM-based models [23,24].
+Building on these NN methods, LLMs have recently garnered attention for their
+extensive knowledge bases, contextual understanding, and adaptability [25]. For
+instance, [26] employed a semantic similarity approach by training a USE, attaining
+77.95% accuracy. Meanwhile, [27] transformed the grading task into a multi-class
+classification problem, fine-tuning a BERT encoder-based model [28] for scoring.
+With the emergence of GPT-based models [29], researchers have begun comparing
+their performance to more traditional architectures. In 2024, [25] demonstrated that
+a fine-tuned GPT-3.5 model achieved an average accuracy of 91.5%, surpassing a
+fine-tuned BERT model’s 83.8%. Similarly, GPT-4 has been shown to outperform SVM
+and match or exceed other strong baselines, albeit with some overfitting in GPT-3.5
+[30]. Another study reported a 0.677 quadratic weighted kappa for GPT-4 across ten
+questions, although its performance varied by subject [31].
+Generating meaningful feedback remains a challenge in automated grading.
+Some approaches use NLP-based systems for diagnostic scores and argumentation
+suggestions [32], while some employ simulation-based feedback to enhance learning
+[33] Recent efforts focus on explainable AI (XAI), integrating neural additive models
+[11] and other methods [34] to improve grading transparency and interpretability.
+3
+RAGT Problem Definition
+Reliable automatic scoring in RATG requires a comprehensive, well-structured rubric
+covering all designated rules. We first define the RATG paradigm and develop a
+scoring logic to simplify rubric creation for instructors. RATAS is implemented based
+on this definition to handle a wide range of extensive real-world rubrics.
+Rubric structure: Rubrics lie at the heart of this problem, containing the rules
+and policies necessary for grading [35]. They commonly take one of two forms:
+holistic rubrics, providing an overarching perspective on performance, and analytical
+rubrics, offering detailed criteria and scoring levels that facilitate more reliable
+automatic assessments [36]. Table 1 presents our redefined rubric structure—an
+analytical approach incorporating all essential scoring components. Based on the
+rubrics required components [37] and our evaluation of multiple course rubrics,
+most existing rubrics can be readily adapted to this format, ensuring comprehensive
+coverage in a range of educational contexts.
+Typically, the second rubric attribute (Basic-rule) serves as a criterion title, with
+corresponding details reflected in Level-of-Achievement (la). In certain cases, such
+
+4
+M. Safilian and A. Beheshti
+as the real rubric used in this paper evaluation, rules may instead appear within
+the Basic-rule itself (as seen in the second example of Tabl 1), leaving la empty or
+providing additional scoring details as needed.
+Table 1. Rubric columns definition, The essential column is indicated with a star.
+Column
+Column Description Example
+ID: Integer*
+Show the unique ID
+for each line of rule
+1
+Basic-Rule:
+string*
+A set of words that
+may serve as a crite-
+rion title or encompass
+some set of rules
+Example 1: BERT Architecture and Applications Example
+2: The response must explain the BERT model’s architec-
+ture and describe at least one of its applications in NLP
+tasks.
+Score-Source
+(SS) : percent-
+age*
+Represents the exam
+score percentage if all
+criteria are met
+SS = 30%
+Level-of-
+Achievement:
+List of string
+and
+their
+related
+per-
+centage
+For each rule, a list of
+levels of achievement
+(la), including level of
+quality (lq) and corre-
+sponding scores (lev-
+els of score, ls) can rep-
+resent varying perfor-
+mance levels.
+la1: (lq 1: The response provides a clear and accurate
+explanation of BERT’s layers and attention mechanism. It
+correctly identifies and thoroughly explains at least one
+NLP application of BERT, including fine-tuning methods
+for each task., ls 1: 100%)
+la2: (lq2: The response describes BERT’s layers and atten-
+tion mechanism but lacks key components or contains in-
+accuracies. It identifies an NLP application and fine-tuning
+methods but lacks clarity or detail., ls2: 50%)
+Logic of Rubric-based Scoring: In typical rubric-based scoring, an instructor
+or system evaluates each criterion (defined in the Basic-Rule, if it is not a title) to
+determine whether the requirement is met. If the criterion is met, the next step is
+to assess which lq, as defined in the related la for that row, is more satisfied by the
+answer. The score for each row is then assigned by multiplying the ls associated with
+the matched quality level by the ss percentage.
+Achieving reliable automatic means listing each criterion on its own row, along
+with detailed la definitions that cover all possible lq. To address the challenge of the
+difficulty of designing complete rubrics, we propose a more flexible scoring logic
+that reduces the complexity of rubric design while preserving its core principles.
+Under this approach, educators can rely on fewer rows and simpler la lists without
+compromising accuracy—provided that the underlying scoring framework supports
+both these streamlined rubrics and more typical, fully detailed formats.
+Flexible Rubric-Based Scoring Logic: In this approach, the system first deter-
+mines the Score Percentage (SP)—indicating how thoroughly the answer meets each
+row’s Basic-Rule—rather than simply checking for a complete match. Next, it identi-
+fies the most suitable la and computes a Level of Quality Aligning Percentage (LQAP),
+reflecting how closely the answer meets the chosen quality level. The final score
+is calculated based on AchievedScore = SP LQAPrelated_lsrelated_SS, where re-
+
+Title Suppressed Due to Excessive Length
+5
+lated_SS is the row’s score source and related_ls is the score level associated with the
+maximum matched la.
+In practice, educational rubrics are often highly intricate, featuring multiple rules
+that can make a fully detailed rubric using typical logic overly complex or even
+impractical. Our flexible scoring logic does not alter the nature or definition of
+RATG, nor does it invalidate the use of typical rubrics. Instead, it streamlines
+rubric design for systems that support this method. Crucially, any rubric formulated
+with this logic can be replicated via traditional approaches, preserving the same rules
+and scoring outcomes. For example, the third column of Table 1 illustrates a single
+row with two las; in a purely typical rubric, this would require two rows and four
+las, a difference that grows with more complex rules.
+Mathematical Definition of Basic ARSN Problem: Given an answer A and a
+rubricR, the objective of RATG is to compute a score S , ranges from 0 to the maximum
+score MS, that reflects how closely A adheres to R: S = argmaxs∈[0,MS] P(S = s | A,R).
+As summarized in Table 1, the rubric has n rows. Let Si denote the score awarded
+for the i-th row, with ri the corresponding Basic-Rule, ssi the Score-Source, and lai
+the associated level-of-Achivement. The total score S is:
+S =
+n
+X
+i=1
+Si =
+n
+X
+i=1
+arg max
+s∈[0,ssi] P
+ Si = s | ri, lai
+
+.
+Each lai consists of m pairs {(lqi j, lsi j)}, where lqi j is the j-th Level of Quality and
+lsi j the corresponding score. To incorporate a flexible scoring logic, define SPi (score
+percentage) as the proportion of the rule ri satisfied in A and LQAPi j (Level-of-Quality
+Matching Percentage) as the proportion of lqi j matched by asi. The refined score
+formula for S becomes:
+S =
+n
+X
+i=1
+Si =
+n
+X
+i=1
+
+SPi × LQAPi,max × LSi,max × ssi
+
+,
+where
+SPi = arg max
+sp∈[0,1] P
+ SP = sp | ri
+
+,
+LQAPi,max =
+max
+j∈{1,...,m}
+ LQAPi j
+
+,
+LQAPi j = arg
+max
+lqap∈[0,1] P
+ LQAP = lqap | asi, lqi j
+
+,
+and LSi,max is the score lsi j corresponding to the maximal LQAPi j.
+4
+RATAS Processes, Conceptual Design and Model Architecture
+Fig. 1 illustrates the primary processes in the RATAS framework and Fig. 2 highlights
+its conceptual steps, inputs, and outputs. The framework comprises two main engines,
+which take an answer and a rubric as inputs and generate both whole and partial scores
+along with detailed reasoning and score analysis. These operations are performed by
+the modules and engines depicted in Fig. 3. All RATAS modules and engines follow
+an API-based design. Communication between them and with commercial LLM APIs
+is facilitated by a dedicated "LLM Gateway" module, ensuring seamless integration
+and interaction across the framework.
+
+6
+M. Safilian and A. Beheshti
+1
+RID
+RL: 
+RID.1
+RL: 
+RID.2
+RL: 
+RID.4
+SR:          
+RID.3
+RR: 
+RID.1.1.1
+RR: 
+RID.2.1.4
+SR: 
+RID.1.1.1.2
+SR: 
+RID.1.1.1.3
+SR: 
+RID.1.1.1.4
+SR: n  
+RID.2.1.1
+RR: 
+RID.4.1
+SR:      
+RID.4.1.1
+SR:    
+RID.4.1.2
+RR: 
+RID.2.1
+SR:       
+RID.1.2
+RR: 
+RID.1.1
+SR: 
+RID.2.1.4.1
+SR: 
+RID.2.1.4.2
+SR:    
+RID.1.1.2
+SR:    
+RID.2.1.2
+SR:    
+RID.2.1.3
+SR: 
+RID.1.1.1.1
+ 
+SR:       
+RID.4.2
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Rubric Knowledge Tree (RKT)
+ 
+ 
+ 
+ 
+ 
+ 
+Cascading Scores and Reason 
+Propagation
+ 
+1
+3
+2
+Answer Content 
+SR Based Scoring
+Fig. 1. The RATAS process flow for RKT construction and scoring involves: 1) Constructing
+RKT nodes from the root. 2) Scoring and reasoning based on SRs, updating SR node attributes.
+3) Cascading scores and reason propagation, updating internal RKT node attributes
+4.1
+Converting Rubric to Rubric Knowledge Tree (RKT)
+The RKT is a tree-based structure used to contextualize a rubric, with each node
+representing a set of scoring rules for specific sections of the rubric. The root (identi-
+fied by a rubric ID, (RID)) corresponds to the entire rubric (Fig. 1), and each child
+node is a rubric row, referred to as a Rubric Line (RL). During each iteration of
+construction, leaf nodes are expanded into more granular rules and assigned to new
+child nodes. This rule-division process must satisfy three criteria: (1) The simpler
+rules must collectively reconstruct the original rule; (2) They must cover distinct,
+non-overlapping aspects; and (3) Their scoring importance should be approximately
+equivalent. Depicted by the black arrow in Fig. 1, this expansion continues until
+no further simplification is possible. The final leaf nodes, representing the fully
+subdivided rules, are called Simplified Rules (SR).
+- SRs Criteria
+- SRs’ list_sub_condition_score
+- SRs’ Score-Source_ID
+- SR’s influence_on_scoring
+- SR’s Influence_Section Type
+- Tree Structure / Rules 
+Relationships
+- Internal Nodes’ 
+influence_type
+- Internal Nodes’ 
+influence_on_scoring
+Rubric
+Answer
+- SR nodes’ 
+Scores
+- SR nodes’ 
+Reasons
+- SR nodes’ Scores
+Converting 
+Rubric to RKT
+Score Related part for each Low-
+Level criterion
+Score Related part for each Low-
+Level criterion
+Scoring ACT nodes 
+based on SRs
+Cascading Score & 
+Reason Propagation
+RKT 
+Constructing 
+Engine
+Scoring and Reasoning Engine
+- SRs Criteria
+- SRs’ list_sub_condition_score:
+Score Related part for each Low-Level 
+criterion
+Score Related part for each Low-Level 
+criterion
+Reason Generation for 
+ACT nodes based on SRs
+Generating 
+Analytical Results
+-Final Score
+- Score Analysis 
+- Answer Analysis
+Fig. 2. RATAS Conceptual Steps and Data Flow.
+
+Title Suppressed Due to Excessive Length
+7
+Each RKT node maintains attributes that capture the characteristics of its scoring
+rules, divided into: (1) contextual attributes, covering the content and structure of
+rules, defined during the RKT’s initial creation, and (2) scoring attributes, detailing
+how rules are assessed, computed during the scoring and reasoning phases. The
+following outlines each RKT node’s attributes, data types, and the RATAS modules
+and engines (Fig. 3) responsible for their computation. Tree-based structure of RATAS
+and the nodes attribute help to generate structured reasoning
+Each RKT node holds attributes describing its scoring rules, divided into two
+categories: 1- contextual attributes, which define the content and structure of
+each rule at creation, and 2- scoring attributes, computed during the scoring and
+reasoning phases to assess rule fulfillment. This tree-based architecture, together with
+these attributes, enables the generation of structured reasoning. The following
+sections detail each node’s attributes, data types, and the corresponding RATAS
+modules (Fig. 3) responsible for their computation.
+Constructing RKT Engine 
+Rules Topic 
+Modeling (RTM)
+Rules-Content Scoring
+RKT Constructing Core Engine
+LLM Module
+MC Core Engine
+Rules Conditions 
+Classification (RCC)
+Answer
+Rubric
+Scoring and Reasoning 
+API Management 
+Fig. 3. RATAS High-Level Architecture.
+– id. Each node in the Rubric Knowledge Tree (RKT) is assigned a unique string-
+based ID by the "RKT Constructing Core". The root ID is RID, while child IDs
+append “.i” (an integer) to the parent’s ID, ensuring a hierarchical structure.
+– leaf. This boolean attribute indicates whether a node is a leaf (1) or an internal
+node (0). It is set by “core of RKT Constructing” in each iteration of the RKT
+construction, allowing the framework to further rule subdivision is possible.
+– criteria. Represented as a string, this attribute denotes the rule(s) linked to the
+node, set by the "core of RKT Constructing" module. For child nodes directly
+under the root, it corresponds to the Basic-Rule in the associated rubric row. For
+deeper nodes, criteria are inherited and further subdivided from the parent’s
+criteria.
+– criteria_simplified_version. This attribute is a list of simplified rules, each de-
+rived from the node’s main criterion by the Criteria Topic Modeling (LLMCTM)
+module. Inspired by the NLP topic modeling problem [38], CTM divides and cat-
+egorizes the parent’s criteria based on a predefined rule-division policy, ensuring
+correctness, clarity, and completeness.
+– separate_rule_number. An integer capturing how many simplified rules are in
+the criteria_simplified_version list. It is periodically updated by the “core of RKT
+Constructing” module whenever new subdivisions are introduced.
+– score_source. A float value representing the Score-Source percentage for the
+node, set by the "core of RKT Constructing" module. For child nodes under
+
+8
+M. Safilian and A. Beheshti
+the root, it is initialized from the corresponding rubric row. When rules are
+divided into finer segments, child nodes inherit proportionally adjusted values
+to maintain a consistent scoring logic.
+– score_source_ID. This integer uniquely identifies the score source assigned to
+each node. Like the id attribute, it is generated by the “core of RKT Constructing”
+module to preserve traceability, especially in complex rubrics.
+– influence_on_scoring. A float specifying what fraction of the node’s Score-Source
+is awarded if its rule is satisfied. Computed by the “core of RKT Constructing”
+engine, this attribute ensures transparent mapping between rule fulfillment and
+the final score.
+– sub_condition (quality level). A list of (string, float) pairs representing potential
+performance levels—quality levels—and their corresponding scores. For root
+child nodes, these pairs mirror the rubric’s Level-of-Achievement. For deeper nodes,
+they are generated by the LLM “Criteria Sub-condition Classification (LLM-
+CSC)” module, which functions similarly to text classification [39] by classifying
+a parent node’s sub-conditions based on criteria_simplified_version,
+and assigning the corresponding text to each related child node.
+– Children. The list of each node’s children.
+4.2
+Scoring Answer based on SRs
+The LLM "SR-based Scoring and Reasoning (LLMSSR)" module computes an
+answer’s score by determining whether each SR—the smallest indivisible rule—is
+met (1) or unmet (0). Rather than predicting numeric scores directly, the LLM
+classifies each SR’s fulfillment, resulting in a more accurate and reliable output. For
+every SR, this module receives the relevant answer segment and other necessary
+inputs (Fig. 2). The "core scoring and reasoning engine" then generates text-based
+explanations based on the corresponding criteria and the matched la. As shown
+by the blue and red dashed arrows in Fig. 1, this granular approach provides a
+comprehensive analysis of student responses and delivers actionable feedback for
+both learners and instructors.
+– score: A floating-point value reflecting the overall grade, aggregated from the
+RKT nodes (for SR nodes, it is equal to 0 or 1).
+– Reason: A structured list or dictionary capturing node-specific details. For leaf
+nodes, each entry includes the RKT node id, score_source_ID, influence_on_scoring,
+rewarded_score, related_content, and reason_text.
+4.3
+Cascading Score and Reason Propagation
+In the concluding steps of RATAS, both partial and final scores—along with their
+corresponding explanations—are computed. Partial scores capture meaningful com-
+binations of rubric criteria, while final scores reflect the overall assessment. The
+"core of the scoring and reasoning engine" merges and concatenates unit-level
+scores and reasons from each SR, propagating them through the RKT (indicated by
+green dashed arrows in Fig. 1). Key inputs include SR-based scores and reasoning,
+
+Title Suppressed Due to Excessive Length
+9
+the RKT structure, and each internal node’s influence_on_scoring. The engine then
+updates the score and reason attributes of all internal nodes, enabling RATAS to pro-
+vide detailed feedback on answer quality, strengths, and weaknesses. The cascading,
+tree-based architecture of RATAS enables the generation of structured explanations
+with different templates that precisely attribute scores to specific rubric components.
+For example, consider the following partial reasoning template:
+Answer Analysis: For rubric row 1, the answer fully satisfies criteria "SR1" and
+"SR2", achieving the "corresponding la" and thus receiving x1% of the "associated SS".
+In contrast, criterion "SR3" is only partially met—earning x2% because of matching
+with "corresponding la"—and criteria SR3 and SR4 are not addressed because of the
+last "corresponding la".
+Improvement Points: 1- For partially met criteria: highlight the gap between
+the maximum achievable la and the achieved level. 2- For unmet criteria: Specify the
+maximum attainable la.
+5
+RATAS Algorithms and Methods
+As illustrated in Fig. \ref{fig1}, RATAS consists of two main engines: the RKT Con-
+structing Engine, which analyzes and conceptualizes the rubric, and the Scoring and
+Reasoning Engine, which generates partial and overall scores along with reasoning
+outputs. Each engine includes a core module that integrates results from various DNT
+modules using specialized methods. RATAS is designed to decompose the complex
+RATG problem into simpler, shorter-input tasks, offering four key advantages: im-
+proved accuracy, as simplifying tasks increases the likelihood of high-quality results;
+and manageable input length, as breaking lengthy inputs into smaller segments
+enhances LLM output quality and reliability.
+5.1
+General responsibilities of Core modules
+Core modules must employ carefully designed models and architectures to divide
+complex tasks into simpler NLP processes without compromising overall quality.
+Although each module may use different methods, they share several key responsi-
+bilities: coordinating module execution and embedded functions, generating inputs
+for downstream tasks, leveraging outputs from DNT modules, computing essential
+results with embedded functions, integrating all intermediate outputs into coherent
+final results, and managing both internal and external communications to maintain
+a seamless workflow. Algorithm 1 provides a high-level representation of the two
+core engines of RATAS.
+5.2
+Methodology for Addressing DNTs
+One of the primary challenges in RATAS is choosing effective approaches for its
+downstream tasks since their quality directly affects overall performance. Although
+these tasks are simpler than RATG, they still qualify as complex NLP problems that
+some of them suffer from lack extensive domain-specific datasets. Table 1 compares
+
+10
+M. Safilian and A. Beheshti
+Algorithm 1: RKT Construction and Answer Scoring with RKT and ACT
+Part 1: RKT Construction–Input: Rubric Table T of n rows, Output: RKT
+Create root node R, set R.id = Rubric-ID, R.leaf = 1, R.criteria = {all BasicCriteria},
+R.num = n
+for x = 1 to n do
+R.cs[x] ←BasicCrit(x); R.ans[x] ←AnsSect(x); R.ss[x] ←ScoreSrc(x);
+R.sc[x] ←SubCond(x)
+R.title = "all"; R.scoreSrc = "all"; R.inf l = 100%
+while any leaf node N with N.leaf=1 do
+NODEEXPANTION(RKT, N)
+Funtion NodeExpantion (Input: leaf node N) Output: expanded node N.leaf = 0
+for x = 0 to N.num −1 do
+Create child M, M.id = N.id.x, M.leaf = 1
+M.criteria = N.cs[x]; M.cs = LLMCTM(M.criteria); M.num = |M.cs|;
+M.inf l = N.inf l
+M.num
+if N is root child then
+M.ans = N.ans[x]; M.ss = N.ss[x]; M.ssID = N.ssID[x]; M.sc = N.sc[x]
+else
+Inherit M.ans, M.ss, M.ssID from N
+M.sc = LLMCSC(M.cs, N.sc[x])
+Part 2: Answer Scoring–Input: RKT, Answer A, Output: Score, Reason for each node
+foreach leaf node N in RKT do
+[N.nodeScore, N.reason[N.id]] ←LLMSSR(A, N.cs, N.subCond)
+foreach internal node N in RKT do
+N.nodeScore ←
+P
+C∈Children(N)(C.inf l × C.nodeScore)
+N.reason[N.id] ←STRUCTREASON({C.reason[C.id] | C ∈Children(N)})
+key criteria of various LLM-based implementation strategies, guiding the selection of
+optimal methods for RATAS.
+According to the analysis, given the limitations of ARSN and the DNTs in RATAS,
+we employ GPT-4o, a powerful black-box LLM API released by OpenAI in May
+2024. According to [45], GPT-4o offers faster performance and higher benchmark
+scores than GPT-4 and GPT-3.5, featuring an expanded context window, improved
+tokenization, and support for multimodal inputs. Its advanced transformer archi-
+tecture and higher rate limits (5x those of GPT-4 Turbo) make it well-suited for
+large-scale AI applications. Furthermore, GPT-4o’s wide knowledge coverage is criti-
+cal for subject-agnostic automated scoring, enabling RATAS to function without
+specialized training for each domain [46]. By relying on GPT APIs, the framework
+also avoids the need for substantial computational resources.
+Although LLMs can be adapted via fine-tuning, prompt engineering, or retrieval-
+augmented generation (RAG) [47], prompt engineering is well-suited for RATAS due
+to its minimal training data requirements. Prompt engineering involves designing and
+optimizing textual inputs to elicit precise, contextually relevant responses [48]. We
+combine multiple prompting techniques, including Chain-of-Thought (CoT), few-shot
+examples, and instruction prompting [49], to guide GPT-4o in producing accurate and
+
+Title Suppressed Due to Excessive Length
+11
+Table 2. Different approaches for employing LLMs in addressing RATAS DNTs
+Approach
+Cons
+Fine-tuning Open-Source LLMs (e.g., Falcon [40],
+BERT [28]). Pretrained on large corpora; perfor-
+mance scales with parameter count and data size.
+Requires extensive data for each domain
+or exam subject; high computational
+costs for large-parameter models.
+Task-Specific Fine-Tuned LLMs (e.g., Pegasus for
+Summarization [41]). Adapted from various foun-
+dation models using large datasets, but typically
+limited to well-defined tasks.
+Existing task-specific LLMs often cannot
+handle RATAS’s novel downstream NLP
+tasks.
+Open-Source Generative Models (e.g., LLaMA 3.1
+[42], Gemma 2 [43]). Pretrained generative archi-
+tectures adaptable via prompting; flexible but may
+require substantial computational resources at scale.
+Low-parameter models yield poor perfor-
+mance; high-parameter models demand
+considerable compute and may lack com-
+prehensive domain knowledge.
+Black-Box Generative LLM APIs (e.g., Azure OpenAI
+4o, BART [44]). Pretrained on vast corpora; produce
+high-quality, domain-agnostic outputs; well-suited
+for advanced NLP tasks with minimal local compute.
+Token-based usage fees; internal me-
+chanics are opaque. RATAS mitigates this
+with no need for lower-layer explainabil-
+ity.
+consistent outputs across RATAS’s downstream NLP tasks. We use a crowdsourcing
+approach to refine prompts, incorporating human evaluation and revision based on
+feedback generated by AI. For GPT-based tasks, we use the Azure OpenAI 4o Assistant
+API [50], which integrates advanced conversational capabilities into applications.
+This setup maintains conversation history, enabling diverse prompting techniques,
+natural language interactions, and intelligent task automation. The design and
+implementation aspects of DNTs, including prompts, associated techniques, and
+example use cases, are documented in the RATAS GitHub repository.
+6
+Dataset and Results
+For evaluation, due to the lack of real-world datasets with complex rubrics and
+lengthy answers, we constructed a unique, contextualized dataset from university-
+level project-based courses. This dataset comprises 417 selected responses from
+approximately 1,500 answers, ranging from 14 to 1,285 words (average: 366),
+significantly exceeding RiceCharm, the existing long-answer datasets with an average
+of 120 words [8] . Additionally, it includes authentic, structured rubrics with extensive
+scoring rules—a complex combination of 34 different criteria (available on the RATAS
+GitHub).
+To evaluate the performance of RATAS relative to direct GPT-4o for the RATG task,
+we conducted three runs for each approach. The average outcomes show, 3, that
+RATAS achieves outstanding accuracy, with a Mean Absolute Error (MAE) of 0.0309,
+a Root Mean Square Error (RMSE) of 0.0443, and an R² of 0.9627. In comparison,
+direct GPT-4o yields substantially higher errors (MAE = 0.2355, RMSE = 0.2923), a
+negative R² of –0.6262, and a low Pearson’s correlation coefficient (r = 0.3743).
+To evaluate the impact of response length on model output quality, we divided
+the dataset into two subsets: responses under 600 words and those exceeding this
+
+12
+M. Safilian and A. Beheshti
+threshold. When analyzing responses over 600 words, the RATAS metric is slightly
+lower than its performance on the entire dataset and the subset of shorter responses.
+However, it still demonstrates strong performance. In contrast, GPT-4o exhibits a
+more pronounced decline in performance on longer responses compared to RATAS.
+These findings highlight RATAS’s robustness and consistency across different response
+lengths, reinforcing its effectiveness over the direct GPT-4o approach.
+We additionally assessed the reliability of both methods by computing the Intra-
+class Correlation Coefficient (ICC) across the full dataset. RATAS achieves a notably
+higher ICC (0.9662) than direct GPT-4o (0.5984), indicating superior reliability. This
+improvement stems from RATAS’s architecture, which leverages simpler and more
+focused inputs (DNTs), as opposed to applying direct GPT-4o to the more complex
+RATG problem.
+Table 3. Evaluation Metrics for RATAS and GPT-4o on Whole Dataset and Subsets of Answers
+Method Dataset
+MAE
+RMSE
+R²
+Pearson’s r
+RATAS
+Whole dataset
+0.0309
+0.0443
+0.9627
+0.9813
+RATAS
+Dataset related to answers with
+fewer than 600 words
+0.0280
+0.0387
+0.9696
+0.9848
+RATAS
+Dataset related to answers with
+more than 600 words
+0.0603
+0.0810
+0.8874
+0.9519
+GPT 4o Whole dataset
+0.2355
+0.2923
+-0.6262
+0.3743
+GPT 4o
+Dataset related to answers with
+fewer than 600 words
+0.2313
+0.2878
+-0.6793
+0.4227
+GPT 4o
+Dataset related to answers with
+more than 600 words
+0.2768
+0.3345
+-0.9181
+-0.2582
+7
+Conclusion
+In this research, we introduce RATAS, a novel framework for Rubric-Based Automatic
+Text Grading (RATG) designed to handle real-world open-ended (OE) exams with
+extensive rubrics. This framework meets various stakeholder requirements, including
+reliable scoring, support for diverse exam formats, and adherence to authentic rubric-
+based evaluation. Our empirical findings highlight RATAS’s strong performance,
+addressing limitations of existing methods through precise floating-point scoring,
+structured feedback generation, and the capacity to evaluate very long answers
+beyond the existing ASAG and ALAG datasets.
+Although RATAS demonstrates effectiveness across various answer lengths, its
+performance declines for very long responses (exceeding 600 words). Future work
+should focus on optimizing RATAS for such extensive inputs and developing special-
+ized frameworks for lengthy academic reports (20–50 pages). Moreover, performance
+may vary under more intricate rubrics featuring hierarchical or interdependent scor-
+ing criteria, which require further evaluation through the creation of dedicated
+datasets.
+
+References
+[1] M. T. Cupboard, “The power of open-ended questions for kids,” Blog
+post, 2025, accessed: February 13, 2025. [Online]. Available: https://www.
+myteachingcupboard.com/blog/the-power-of-open-ended-questions-for-kids
+[2] M. T. Chi, N. De Leeuw, M.-H. Chiu, and C. LaVancher, “Eliciting self-explanations
+improves understanding,” Cognitive science, vol. 18, no. 3, pp. 439–477, 1994.
+[3] G. Kolappan, Computer Assisted Short Answer Grading with Rubrics using Active
+Learning, 2023.
+[4] P. Santos, X. Colina, D. Hernández-Leo, J. Melero, and J. Blat, “Enhancing
+computer assisted assessment using rubrics in a qti editor,” in 2009 Ninth IEEE
+International Conference on Advanced Learning Technologies.
+IEEE, 2009, pp.
+303–305.
+[5] R. Weegar and P. Idestam-Almquist, “Reducing workload in short answer grad-
+ing using machine learning,” International Journal of Artificial Intelligence in
+Education, vol. 34, no. 2, pp. 247–273, 2024.
+[6] R. Gao, H. E. Merzdorf, S. Anwar, M. C. Hipwell, and A. R. Srinivasa, “Automatic
+assessment of text-based responses in post-secondary education: A systematic
+review,” Computers and Education: Artificial Intelligence, vol. 6, p. 100206, 2024.
+[7] S. Burrows, I. Gurevych, and B. Stein, “The eras and trends of automatic short
+answer grading,” International journal of artificial intelligence in education,
+vol. 25, pp. 60–117, 2015.
+[8] S. Sonkar, K. Ni, L. Tran Lu, K. Kincaid, J. S. Hutchinson, and R. G. Bara-
+niuk, “Automated long answer grading with ricechem dataset,” in International
+Conference on Artificial Intelligence in Education.
+Springer, 2024, pp. 163–176.
+[9] B. Prasain and S. K. Bajaj, “Analysis of algorithms in automated marking in
+education: a proposed hybrid algorithm,” in 2020 5th International Conference
+on Innovative Technologies in Intelligent Systems and Industrial Applications
+(CITISIA).
+IEEE, 2020, pp. 1–10.
+[10] T. Wang, N. Inoue, H. Ouchi, T. Mizumoto, and K. Inui, “Inject rubrics into short
+answer grading system,” in Proceedings of the 2nd Workshop on Deep Learning
+Approaches for Low-Resource NLP (DeepLo 2019), 2019, pp. 175–182.
+[11] A. Condor and Z. Pardos, “Explainable automatic grading with neural addi-
+tive models,” in International Conference on Artificial Intelligence in Education.
+Springer, 2024, pp. 18–31.
+[12] M. Safilian, S. M. Hashemi, S. Eghbali, and A. Safilian, “An approximation
+algorithm for the subpath planning problem.” in IJCAI, 2016, pp. 669–675.
+[13] M. Safilian, S. Eghbali, A. Safilian, and A. Nouri, “Probabilistic roadmap planner
+with adaptive sampling based on clustering.”
+[14] A. Vaswani, “Attention is all you need,” Advances in Neural Information Processing
+Systems, 2017.
+[15] V. Alto, Modern Generative AI with ChatGPT and OpenAI Models: Leverage the
+capabilities of OpenAI’s LLM for productivity and innovation with GPT3 and GPT4.
+Packt Publishing Ltd, 2023.
+
+14
+M. Safilian and A. Beheshti
+[16] MarketResearch.Biz.
+(2024,
+Sep.)
+Global
+generative
+ai
+in
+educa-
+tion
+market.
+[Online].
+Available:
+https://marketresearch.biz/report/
+generative-ai-in-education-market/
+[17] E. Kasneci, K. Sessler, S. K"uchemann, M. Bannert, D. Dementieva, F. Fischer,
+U. Gasser, G. Groh, S. G"unnemann, E. H"ullermeier et al., “Chatgpt for good? on
+opportunities and challenges of large language models for education,” Learning
+and individual differences, vol. 103, p. 102274, 2023.
+[18] I. Chamieh, T. Zesch, and K. Giebermann, “Llms in short answer scoring: Limi-
+tations and promise of zero-shot and few-shot approaches,” in Proceedings of
+the 19th workshop on innovative use of nlp for building educational applications
+(bea 2024), 2024, pp. 309–315.
+[19] R. Islam and O. M. Moushi, “Gpt-4o: The cutting-edge advancement in multi-
+modal llm,” Authorea Preprints, 2024.
+[20] M. O. Dzikovska, R. D. Nielsen, and C. Leacock, “The joint student response
+analysis and recognizing textual entailment challenge: making sense of student
+responses in educational applications,” Language Resources and Evaluation,
+vol. 50, pp. 67–93, 2016.
+[21] M. Mohler, R. Bunescu, and R. Mihalcea, “Learning to grade short answer ques-
+tions using semantic similarity measures and dependency graph alignments,”
+in Proceedings of the 49th annual meeting of the association for computational
+linguistics: Human language technologies, 2011, pp. 752–762.
+[22] N. Yeruva, S. Venna, H. Indukuri, and M. Marreddy, “Triplet loss based siamese
+networks for automatic short answer grading,” in Proceedings of the 14th Annual
+Meeting of the Forum for Information Retrieval Evaluation, 2022, pp. 60–64.
+[23] J. A. Erickson, A. F. Botelho, S. McAteer, A. Varatharaj, and N. T. Heffernan, “The
+automated grading of student open responses in mathematics,” in Proceedings
+of the tenth international conference on learning analytics & knowledge, 2020,
+pp. 615–624.
+[24] C. N. Tulu, O. Ozkaya, and U. Orhan, “Automatic short answer grading with
+semspace sense vectors and malstm,” IEEE Access, vol. 9, pp. 19 270–19 280,
+2021.
+[25] E. Latif and X. Zhai, “Fine-tuning chatgpt for automatic scoring,” Computers
+and Education: Artificial Intelligence, vol. 6, p. 100210, 2024.
+[26] H. M. Balaha and M. M. Saafan, “Automatic exam correction framework (aecf)
+for the mcqs, essays, and equations matching,” IEEE Access, vol. 9, pp. 32 368–
+32 389, 2021.
+[27] X. Zhu, H. Wu, and L. Zhang, “Automatic short-answer grading via bert-based
+deep neural networks,” IEEE Transactions on Learning Technologies, vol. 15,
+no. 3, pp. 364–375, 2022.
+[28] J. Devlin, “Bert: Pre-training of deep bidirectional transformers for language
+understanding,” arXiv preprint arXiv:1810.04805, 2018.
+[29] S. Kublik and S. Saboo, GPT-3: The Ultimate Guide to Building NLP Products
+with OpenAI API.
+Packt Publishing Ltd, 2023.
+[30] I. Chamieh, T. Zesch, and K. Giebermann, “Llms in short answer scoring: Limi-
+tations and promise of zero-shot and few-shot approaches,” in Proceedings of
+the 19th workshop on innovative use of nlp for building educational applications
+(bea 2024), 2024, pp. 309–315.
+
+Title Suppressed Due to Excessive Length
+15
+[31] L. Jiang and N. Bosch, “Short answer scoring with gpt-4,” in Proceedings of the
+Eleventh ACM Conference on Learning@ Scale, 2024, pp. 438–442.
+[32] H.-S. Lee, A. Pallant, S. Pryputniewicz, T. Lord, M. Mulholland, and O. L. Liu,
+“Automated text scoring and real-time adjustable feedback: Supporting revision
+of scientific arguments involving uncertainty,” Science Education, vol. 103, no. 3,
+pp. 590–622, 2019.
+[33] H.-S. Lee, G.-H. Gweon, T. Lord, N. Paessel, A. Pallant, and S. Pryputniewicz,
+“Machine learning-enabled automated feedback: Supporting students’ revision
+of scientific arguments based on data drawn from simulation,” Journal of Science
+Education and Technology, vol. 30, no. 2, pp. 168–192, 2021.
+[34] C. Singh, A. R. Hsu, R. Antonello, S. Jain, A. G. Huth, B. Yu, and J. Gao,
+“Explaining black box text modules in natural language with language models,”
+arXiv preprint arXiv:2305.09863, 2023.
+[35] S. El Boudamoussi, “Using criteria-based assessment rubrics for online marking:
+Technological and pedagogical challenges,” Journal of Higher Education Theory
+and Practice, vol. 22, no. 8, 2022.
+[36] C. S. Wiseman, “A comparison of the performance of analytic vs. holistic scoring
+rubrics to assess l2 writing,” International Journal of Language Testing, vol. 2,
+no. 1, pp. 59–92, 2012.
+[37] P. Dawson, “Assessment rubrics: towards clearer and more replicable design,
+research and practice,” Assessment & Evaluation in Higher Education, vol. 42,
+no. 3, pp. 347–360, 2017.
+[38] A. Abdelrazek, Y. Eid, E. Gawish, W. Medhat, and A. Hassan, “Topic modeling
+algorithms and applications: A survey,” Information Systems, vol. 112, p. 102131,
+2023.
+[39] C. C. Aggarwal and C. Zhai, “A survey of text classification algorithms,” Mining
+text data, pp. 163–222, 2012.
+[40] E. Almazrouei, H. Alobeidli, A. Alshamsi, A. Cappelli, R. Cojocaru, M. Debbah,
+É. Goffinet, D. Hesslow, J. Launay, Q. Malartic et al., “The falcon series of open
+language models,” arXiv preprint arXiv:2311.16867, 2023.
+[41] J. Zhang, Y. Zhao, M. Saleh, and P. Liu, “Pegasus: Pre-training with extracted
+gap-sentences for abstractive summarization,” in International conference on
+machine learning.
+PMLR, 2020, pp. 11 328–11 339.
+[42] H. Touvron, T. Lavril, G. Izacard, X. Martinet, M.-A. Lachaux, T. Lacroix, B. Roz-
+ière, N. Goyal, E. Hambro, F. Azhar et al., “Llama: Open and efficient foundation
+language models,” arXiv preprint arXiv:2302.13971, 2023.
+[43] G. Team, T. Mesnard, C. Hardin, R. Dadashi, S. Bhupatiraju, S. Pathak, L. Sifre,
+M. Rivière, M. S. Kale, J. Love et al., “Gemma: Open models based on gemini
+research and technology,” arXiv preprint arXiv:2403.08295, 2024.
+[44] M. Lewis, Y. Liu, N. Goyal, M. Ghazvininejad, A. Mohamed, O. Levy, V. Stoyanov,
+and L. Zettlemoyer, “Bart: Denoising sequence-to-sequence pre-training for
+natural language generation, translation, and comprehension,” arXiv preprint
+arXiv:1910.13461, 2019.
+[45] TechTarget, “GPT-4o vs. GPT-4: How do they compare?” Jan 2025,
+accessed: 2024-07-24. [Online]. Available: https://www.techtarget.com/
+searchenterpriseai/feature/GPT-4o-vs-GPT-4-How-do-they-compare
+
+16
+M. Safilian and A. Beheshti
+[46] S. Shahriar, B. D. Lund, N. R. Mannuru, M. A. Arshad, K. Hayawi, R. V. K. Bevara,
+A. Mannuru, and L. Batool, “Putting gpt-4o to the sword: A comprehensive
+evaluation of language, vision, speech, and multimodal proficiency,” Applied
+Sciences, vol. 14, no. 17, p. 7782, 2024.
+[47] Y. Liu, Y. Zhang, Q. Li, S. Feng, D. Wang, Y. Zhang, and H. Schütze, “Hift: A hier-
+archical full parameter fine-tuning strategy,” arXiv preprint arXiv:2401.15207,
+2024.
+[48] X. Amatriain, “Prompt design and engineering: Introduction and advanced
+methods,” arXiv preprint arXiv:2401.14423, 2024.
+[49] S. Mishra, D. Khashabi, C. Baral, Y. Choi, and H. Hajishirzi, “Reframing instruc-
+tional prompts to gptk’s language,” arXiv preprint arXiv:2109.07830, 2021.
+[50] Microsoft, “Azure openai assistants - concepts,” Microsoft Learn, 2025, accessed:
+February 13, 2025. [Online]. Available: https://learn.microsoft.com/en-us/
+azure/ai-services/openai/concepts/assistants

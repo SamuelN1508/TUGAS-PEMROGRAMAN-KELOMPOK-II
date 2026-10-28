@@ -1,0 +1,926 @@
+NIPES-Journal of Science and Technology, Research Vol. 7, Special Issue: Landmark University International Conference 
+SEB4SDG 2025, pp. 843–849 
+ 
+843 
+ 
+ 
+Comparative Evaluation of Transformer-Based Models for 
+Automated Short-Answer Grading 
+ 
+Temidayo Oluwatosin Omotehinwa 
+Department of Mathematics and Computer 
+Science 
+Federal University of Health Sciences  
+Otukpo, Nigeria 
+temidayo.omotehinwa@fuhso.edu.ng  
+ 
+Rock Adeiza Ezekiel  
+Directorate of Information Technology and 
+Resource Centre (ITRC) 
+Kogi State Polytechnic 
+Lokoja, Kogi State 
+rock.ezekiel@kogistatepolytechnic.edu.ng  
+ 
+Monday Onoja 
+Department of Applied Informatics 
+Comenius University Bratislava 
+Bratislava, Slovakia 
+monday.onoja@fmph.uniba.sk  
+ 
+Emmanuel Chizoba Omeye 
+Department of Mathematics and Computer Science 
+Federal University of Health Sciences  
+Otukpo, Nigeria 
+eminentemma.chizoba@gmail.com  
+Yakubu Aliyu Ibrahim  
+Department of Mathematics and Computer Science 
+Federal University of Health Sciences  
+Otukpo, Nigeria 
+talktoibro80@gmail.com 
+ 
+ 
+ 
+Abstract—The grading of open-ended questions in educational 
+settings is a labour-intensive and subjective process, often leading to 
+inconsistencies and biases in scoring. Conventional automated and 
+manual grading systems have faced challenges in accurately 
+interpreting the complexity and variability of student responses. This 
+study addressed these challenges by developing a transformer-based 
+scoring approach that leverages advanced artificial intelligence and 
+semantic similarity techniques to provide consistent, accurate, and 
+efficient grading of open-ended questions. The study evaluated the 
+performance of MiniLM, BERT, RoBERTa, and SBERT in grading 
+short-answer questions based on correlation, agreement, semantic 
+sensitivity, and computational efficiency. Results indicate that 
+SBERT exhibits the highest semantic sensitivity across different 
+questions (Q1: 0.726, Q2: 0.881, Q3: 0.798) and strong correlation 
+with MiniLM (Pearson: 0.909, Spearman: 0.908). MiniLM provides 
+a competitive balance between efficiency and accuracy, processing 
+responses in 80.06 seconds compared to RoBERTa’s 1359.64 
+seconds, making MiniLM 16.98 times faster and substantially more 
+efficient for grading large volumes of responses in real-time or large-
+scale grading scenarios. Score distribution analysis revealed that 
+SBERT and MiniLM produce similar grading patterns, while 
+RoBERTa demonstrates the highest variance. BERT and RoBERTa 
+demonstrate near-random agreement (-0.020), as reflected in 
+Cohen’s Kappa scores which indicates inconsistencies. These 
+findings emphasize the importance of model selection in automated 
+grading, with SBERT emerging as the most robust in capturing 
+semantic similarity. The proposed approach demonstrates the 
+potential to alleviate educators' grading burden with transformer-
+based scoring while enhancing the fairness and reliability of student 
+evaluations.  
+Keywords— 
+Automated Grading, Sentence-Transformers, 
+Semantic Similarity, Short-Answer Assessment, Machine Learning 
+in Education, Natural Language Processing 
+https://doi.org/10.37933/nipes/7.4.2025.SI97 
+eISSN-2682-5821| pISSN-2734-2352 © 2025 NIPES Pub 
+ 
+I. INTRODUCTION 
+The assessment of student performance is a very important 
+component of the educational process, as it provides valuable 
+insights into learning outcomes, knowledge retention, and 
+conceptual understanding. Traditional assessment methods, 
+particularly those involving open-ended questions, present 
+significant challenges for human evaluators in terms of 
+scalability, subjectivity, and grading consistency [1], [2]. These 
+challenges can result in inconsistencies and a lack of fairness in 
+evaluations [3], [4]. Unlike multiple-choice or fill-in-the-blank 
+assessments, which can be graded efficiently using rule-based 
+algorithms, evaluating open-ended responses requires deeper 
+semantic understanding, making manual grading both time-
+consuming, labour-intensive and prone to inconsistencies [5], 
+[6], [7]. 
+
+T. O. Omotehinwa et al., NIPES-Journal of Science and Technology Research, Vol. 7, Special Issue: Landmark University International Conference 
+SEB4SDG 2025, pp. 843–849 
+ 
+ 
+844 
+ 
+Recent advancements in artificial intelligence (AI) and 
+natural language processing (NLP) have revolutionized various 
+domains [8], [9], [10], including educational assessment [11], 
+[12], [13]. AI-driven automated grading systems have emerged 
+as a promising solution to alleviate the burdens of manual 
+grading while enhancing accuracy, efficiency, and fairness 
+[14], [15]. Among AI-based methods, transformer-based 
+models, such as BERT (Bidirectional Encoder Representations 
+from Transformers) and Sentence-BERT (SBERT), have 
+demonstrated state-of-the-art performance in semantic text 
+similarity and comprehension tasks [16], [17], [18], [19]. These 
+models leverage deep learning techniques to capture intricate 
+language structures, enabling them to assess responses based on 
+semantic similarity rather than mere keyword matching. 
+Despite their potential, selecting the most suitable transformer 
+model for automated grading remains a critical challenge, as 
+different models exhibit varying levels of accuracy, agreement, 
+and computational efficiency. 
+The application of transformer-based models in grading 
+open-ended questions holds significant promise. These models 
+can potentially address the limitations of traditional and earlier 
+automated grading systems by offering a more sophisticated 
+analysis of student responses by capturing contextual meaning, 
+paraphrased expressions, and subtle linguistic variations. They 
+can analyse students' written responses, evaluate the content 
+and structure, and generate scores that align with human 
+evaluators' standards. Despite these potential benefits, the 
+integration of AI in grading open-ended questions presents 
+several challenges such as understanding context, handling 
+ambiguity, lack of domain specific knowledge and deployment 
+[20], [21]. Ensuring the reliability, fairness, and transparency of 
+AI-driven grading systems is paramount. 
+This study aims to evaluate the performance of several 
+transformer-based models: MiniLM, BERT, RoBERTa, and 
+SBERT in the grading of short-answer questions. The models 
+are assessed based on their correlation in model scores, 
+agreement metrics, semantic sensitivity, and computational 
+efficiency. Specifically, the study seeks to determine which 
+model offers the best balance between accuracy and processing 
+speed while maintaining reliable grading patterns.  
+By addressing the challenges of inconsistency and 
+subjectivity in manual grading, this research highlights the 
+potential of transformer-based scoring approaches to reduce 
+grading time, improve fairness and reliability of student 
+evaluations. Furthermore, this study provides empirical 
+evidence on the reliability and effectiveness of transformer-
+based models for automated evaluation, paving the way for 
+broader adoption in computer-assisted learning, remote 
+education, and standardized testing. 
+II. RELATED WORKS 
+Numerous methodologies have been proposed for 
+automated short-answer grading systems. This section reviews 
+relevant studies that focus on the automatic evaluation of short-
+answer responses. 
+The study by [22] developed a framework for automatic 
+grading of short-answers. The framework combined semantic 
+features based on BERT and lexical features using TF-IDF 
+(Term Frequency-Inverse Document Frequency) for improved 
+accuracy in grading. A unique part of the framework is the 
+support for non-English dataset. The experimental results 
+showed that the framework named GradeAid achieved a 
+competitive performance with a root mean squared error 
+(RMSE) of 0.25. 
+The study by [23] focused on the automatic grading of 
+responses to questions using semantic similarity in a low 
+resource language; Arabic. Local and hybrid local-global 
+weighting technique was applied to a dataset containing 2,133 
+model-student answer pairs. The evaluation results revealed 
+that the hybrid local-global weighting achieved a superior 
+performance with a F1-score of 82.82% and RMSE of 0.798. 
+In a bid to autonomously and accurately evaluate short-
+answer questions [24], hybridized multiple tokenizers 
+(DistilBERT, MPNet, XLNet and RoBERTa) with BERT. The 
+evaluation of these models revealed an accuracy up to 99.6%. 
+However, the generalizability across diverse subject is yet to be 
+established. 
+A study by [25] introduced GRAD-AI, an AI-powered 
+grading tool for computer programming assignments that 
+combines automation with teacher involvement. Using 
+techniques like the Halstead Complexity Measure, TF-IDF, 
+Abstract Syntax Tree processing, and K-means clustering, it 
+ensures accurate, unbiased, and timely feedback. Experimental 
+results showed its effectiveness in delivering precise 
+assessments and real-time feedback, fostering interactive 
+learning. 
+Reference [26] focused on the assessment of Ai model’s 
+performance on open-ended medical questions. In the study, 21 
+open-ended certification examination questions on head and 
+neck were used to test ChatGPT’s performance. The responses 
+from the language model were evaluated based on concordance, 
+validity, safety and competency (CVSC). After three trials 
+ChatGPT achieved mean passing score of 75% and performed 
+better when guided with prompts. High concordance (92.06%) 
+and satisfactory validity were also recorded. However, the 
+study noted that ChatGPT sometimes provided partially correct 
+responses and generated misleading information. In a similar 
+study [27] an investigation into the effectiveness of fine-tuned 
+GPT-3.5 for the grading of students responses to science 
+education questions was carried out in a bid to address the 
+limitation of direct pre-trained model usage due to differences 
+in student language pattern and the need for contextual 
+understanding. The performance of the fine-tuned GPT-3.5 was 
+compared to fine-tuned BERT. The result revealed that GPT3.5 
+achieved a superior performance over BERT with a mean 
+scoring accuracy of 9.1% across tasks. 
+The feasibility of GPT and Llama for automatic grading of 
+short-answer was investigated in this study [28]. The 
+experimental setup included zero-shot, few-shot, fine-tuned 
+variants of GPT and Llama, and supervised (BERT and SVM) 
+
+T. O. Omotehinwa et al., NIPES-Journal of Science and Technology Research, Vol. 7, Special Issue: Landmark University International Conference 
+SEB4SDG 2025, pp. 843–849 
+ 
+ 
+845 
+ 
+models. The results revealed that the LLMs performance for 
+zero-shot and few-shot settings was very poor, rendering them 
+impractical for accurate assessment without additional training. 
+The LLMs performance matched the supervised models after 
+fine-tuning. The efficiency trade-offs suggest that LLMs are not 
+yet feasible for short-answer grading. Also, a recent study [29] 
+which investigated the effectiveness of Chatgpt-4 compared to 
+human in scoring answers and providing feedback on dental 
+students histology assignment found that Chatgpt-4 was 
+superior in identifying mistakes and providing clear 
+improvement suggestion. However, the students expressed 
+greater comfort in human tutor scoring and feedback. 
+The study by [30] hybridized word level text preprocessing 
+algorithm, artificial neural network (ANN), text similarity 
+algorithm and heuristic decision rules for scoring students’ 
+answer in Polish. The proposed approach achieved a high 
+grading accuracy. However, the false negatives indicate the 
+need for further refinements. 
+It can be observed from the related work that existing 
+studies on automated short-answer grading have made 
+significant strides but still present notable gaps. Many 
+frameworks, such as GradeAid [22] and GRAD-AI [25], 
+integrate AI-driven approaches but rely heavily on traditional 
+lexical features such as TF-IDF or structural analysis (Abstract 
+Syntax Trees), limiting their ability to capture deep semantic 
+meaning. While studies leveraging transformer models, such as 
+those by [24] and [28], highlight their high accuracy, concerns 
+remain about their generalizability across diverse subjects, 
+languages, and question types. Additionally, research into large 
+language models (LLMs) like GPT-3.5 and Llama [27], [28]  
+demonstrates that their zero-shot and few-shot performance is 
+inadequate for grading, requiring extensive fine-tuning for 
+effective assessment. Furthermore, comparative analyses of 
+different transformer-based models for short-answer grading 
+are scarce, with most studies focusing on a single model rather 
+than evaluating multiple architectures in terms of accuracy, 
+efficiency, and agreement. 
+Given these limitations, this study justifies its contributions 
+by conducting a comparative analysis of MiniLM, BERT, 
+RoBERTa, and SBERT to determine the most effective 
+transformer-based model for short-answer grading. Unlike 
+previous studies that focus on either lexical features or a single 
+transformer model, this research evaluates multiple models 
+across 
+critical metrics, including 
+semantic 
+sensitivity, 
+correlation, agreement, and computational efficiency. By doing 
+so, it provides deeper insights into model selection for 
+automated grading, identifying an optimal balance between 
+accuracy and efficiency. 
+III. METHODOLOGY 
+A. Data Collection 
+The dataset used in this study comprises responses from 225 
+students offering COS101: Introduction to Computing Science 
+at the Federal University of Health Sciences, Otukpo, Benue 
+State, Nigeria [31]. The students answered three open-ended 
+questions: (Q1) What was the significance of Ada Lovelace's 
+work on the Analytical Engine? (Q2) What contribution did 
+John von Neumann make to computer architecture? (Q3) What 
+was the contribution of John Presper Eckert and John W. 
+Mauchly to computer development? The data was collected via 
+Google Forms and stored in a CSV file containing four columns: 
+Matric Number, Q1, Q2, and Q3. The columns Q1, Q2, and Q3 
+holds the students’ responses to each of the questions asked.  
+Each response was evaluated against predefined correct answers 
+to determine semantic similarity and assign scores. 
+B. Sentence Embedding Models  
+Four transformer-based sentence embedding models were 
+employed to measure semantic similarity between student 
+responses and the correct answers: 
+• MiniLM (paraphrase-MiniLM-L6-v2): is a lightweight 
+yet powerful refined version of large transformer models 
+like BERT and RoBERTa, designed for efficiency 
+without compromising performance. By leveraging deep 
+self-attention distillation, it effectively compresses the 
+knowledge of larger models into a more compact form 
+while preserving their core capabilities [32]. By 
+optimizing the number of attention heads and hidden 
+layers, MiniLM achieves fast inference speeds and 
+efficient memory usage, making it ideal for real-time 
+NLP applications. 
+• BERT (Bidirectional Encoder Representations from 
+Transformers) 
+(bert-base-nli-mean-tokens): 
+is 
+a 
+transformer-based model developed by Google AI that 
+revolutionized natural language processing. Unlike 
+traditional models that process text sequentially, BERT 
+leverages deep bidirectional representations, allowing it 
+to jointly consider both left and right context across all 
+layers [33]. This bidirectional approach enables a more 
+comprehensive understanding of language nuances, 
+making BERT highly effective for tasks such as question 
+answering, sentiment analysis, and text classification. 
+• RoBERTa (Robustly Optimized BERT Pretraining 
+Approach) (sentence-transformers/all-roberta-large-v1): 
+is an advanced refinement of BERT, developed by 
+Facebook AI [34], that enhances performance through 
+key optimizations. By training on larger mini-batches, 
+eliminating the next-sentence prediction objective, and 
+employing dynamic masking, RoBERTa achieves a 
+deeper understanding of contextual relationships in text 
+[34]. These improvements enable it to outperform BERT 
+across various natural language processing tasks by 
+capturing richer linguistic patterns while maintaining 
+greater efficiency [35], [36], [37]. 
+• Sentence-BERT (SBERT) (all-MiniLM-L12-v2): is an 
+enhanced variant of BERT designed to generate 
+semantically rich sentence embeddings using Siamese 
+and triplet network architectures [38]. This approach not 
+only captures contextual meaning more effectively but 
+also drastically improves efficiency in tasks such as 
+semantic similarity search and clustering. Unlike the 
+
+T. O. Omotehinwa et al., NIPES-Journal of Science and Technology Research, Vol. 7, Special Issue: Landmark University International Conference 
+SEB4SDG 2025, pp. 843–849 
+ 
+ 
+846 
+ 
+original BERT model, which requires computationally 
+expensive cross-encoding for pairwise comparisons, 
+SBERT 
+enables 
+quick 
+and 
+scalable 
+similarity 
+computations by precomputing fixed-length vector 
+representations [38]. As a result, it delivers high accuracy 
+while significantly reducing processing time, making it 
+particularly well-suited for large-scale natural language 
+understanding applications. 
+C. Semantic Similarity Computation 
+Each model generates vector embeddings for both student 
+responses and predefined correct answers. The similarity 
+between these embeddings is computed using cosine similarity 
+as in (1). A and B are the vector embeddings of the student 
+response and correct answer, respectively. 
+ 𝐶𝑜𝑠𝑖𝑛𝑒 𝑆𝑖𝑚𝑖𝑙𝑎𝑟𝑖𝑡𝑦(𝐴, 𝐵) =
+𝐴. 𝐵
+‖𝐴‖‖𝐵‖                                     (1) 
+Where: 
+𝐴. 𝐵 is the dot product of the two vectors and it is computed 
+as in (2).  
+                                            𝐴. 𝐵= ∑𝐴𝑖𝐵𝑖
+𝑛
+𝑖=1
+                                (2) 
+‖𝐴‖ and ‖𝐵‖ are the Euclidean norms (magnitudes) of 𝐴 
+and 𝐵 computed as defined in (3) and (4). 
+                                          ‖𝐴‖ = √∑𝐴𝑖
+2
+𝑛
+𝑖=1
+                                (3) 
+                                          ‖𝐵‖ = √∑𝐵𝑖
+2
+𝑛
+𝑖=1
+                              (4) 
+Cosine similarity ranges from -1 (completely opposite) to 1 
+(identical), with 0 indicating no similarity. 
+D. Grading Framework 
+A scoring rubric was established based on similarity 
+thresholds: 
+• 
+Similarity ≥ 0.8 → Score: 5 (Very similar) 
+• 
+0.6 ≤ Similarity < 0.8 → Score: 3 (Moderately similar) 
+• 
+0.4 ≤ Similarity < 0.6 → Score: 1 (Somewhat similar) 
+• 
+Similarity < 0.4 → Score: 0 (Not similar) 
+Each model assigns a score to every student response, and 
+total scores are computed for individual models. 
+E. Evaluation Metrics 
+To compare the effectiveness and reliability of different 
+models, multiple evaluation metrics were applied: 
+• Pearson and Spearman Correlation: Measures the 
+strength of linear and rank-order agreement between 
+model scores. 
+• Cohen’s Kappa: Assesses inter-model agreement to 
+determine consistency. 
+• Score Distribution Analysis: Uses Kernel Density 
+Estimation (KDE) to visualize scoring patterns across 
+models. 
+• Semantic Sensitivity Analysis: Evaluates how stable the 
+models are when grading paraphrased responses. To 
+assess the robustness of models to paraphrasing, a 
+semantic sensitivity test was conducted. A set of 
+paraphrased responses was created for three key 
+questions while preserving their original meaning. Each 
+model computed semantic similarity scores between the 
+paraphrased responses and the corresponding correct 
+answers. Higher scores indicate greater stability in 
+recognizing reworded but semantically equivalent 
+answers. This analysis evaluates the model’s ability to 
+generalize beyond exact phrasing, ensuring consistency 
+in grading. 
+• Processing Time Analysis: Measures computational 
+efficiency of each model. 
+IV. RESULTS AND DISCUSSION 
+The evaluation of the four transformer-based models 
+(MiniLM, BERT, RoBERTa, and SBERT) for grading student 
+responses revealed significant variations in their performance. 
+Table I presents the Pearson correlation, Spearman correlation, 
+and Cohen’s Kappa scores, which measure the similarity of total 
+scores assigned by different models. 
+Pearson and Spearman correlations indicate the degree of 
+linear and rank-based agreement between models. The highest 
+correlation values were observed between MiniLM and SBERT 
+(Pearson: 0.909, Spearman: 0.908) (Table I), suggesting that 
+these two models assigned highly similar scores. RoBERTa and 
+SBERT also exhibited strong correlation (Pearson: 0.799, 
+Spearman: 0.795), indicating comparable scoring patterns. In 
+contrast, the lowest correlation was observed between BERT 
+and RoBERTa (Pearson: 0.720, Spearman: 0.689), suggesting 
+that these models differed substantially in their scoring 
+approach. The strong correlation between SBERT and MiniLM 
+supports the inclination that SBERT effectively captures 
+semantic similarity, likely due to its specialized sentence 
+representation training. 
+TABLE I.  
+PERFORMANCE EVALUATION RESULTS OF MINILM, BERT, 
+ROBERTA, AND SBERT BASED ON CORRELATION AND AGREEMENT 
+ANALYSIS 
+
+T. O. Omotehinwa et al., NIPES-Journal of Science and Technology Research, Vol. 7, Special Issue: Landmark University International Conference 
+SEB4SDG 2025, pp. 843–849 
+ 
+ 
+847 
+ 
+Model Comparison 
+Pearson  
+Correlation 
+Spearman 
+Correlation 
+Cohen’s 
+Kappa 
+MiniLM vs BERT 
+0.742 
+0.752 
+0.026 
+MiniLM vs RoBERTa 
+0.765 
+0.759 
+0.094 
+MiniLM vs SBERT 
+0.909 
+0.908 
+0.323 
+BERT vs MiniLM 
+0.742 
+0.752 
+0.026 
+BERT vs RoBERTa 
+0.720 
+0.689 
+-0.020 
+BERT vs SBERT 
+0.745 
+0.745 
+0.147 
+RoBERTa vs MiniLM 
+0.765 
+0.759 
+0.094 
+RoBERTa vs BERT 
+0.720 
+0.689 
+-0.020 
+RoBERTa vs SBERT 
+0.799 
+0.795 
+0.017 
+SBERT vs MiniLM 
+0.909 
+0.908 
+0.323 
+SBERT vs BERT 
+0.745 
+0.745 
+0.147 
+SBERT vs RoBERTa 
+0.799 
+0.795 
+0.017 
+ 
+Cohen’s Kappa assesses inter-model agreement beyond 
+random chance [39]. The highest agreement was found between 
+MiniLM and SBERT (0.323), followed by BERT and SBERT 
+(0.147). In contrast, BERT and RoBERTa exhibited the lowest 
+agreement (-0.020), implying near-random agreement levels. 
+These findings suggest that some models exhibit more 
+consistency in their grading tendencies, while others may rely 
+on different linguistic cues when assigning similarity scores. 
+The lower agreement scores for RoBERTa highlight its distinct 
+processing characteristics compared to the other models. BERT 
+and RoBERTa demonstrate near-random agreement (-0.020), as 
+reflected 
+in 
+Cohen’s 
+Kappa 
+scores 
+which 
+indicates 
+inconsistencies. The near-random agreement between BERT 
+and RoBERTa (-0.020 Cohen’s Kappa) likely stems from 
+differences in their pretraining objectives, contextual sensitivity, 
+and score variance. RoBERTa’s dynamic masking strategy and 
+extensive training may enhance its semantic understanding, 
+while BERT’s reliance on next-sentence prediction (NSP) could 
+limit its ability to capture nuanced relationships, leading to 
+divergent grading patterns. Additionally, RoBERTa’s higher 
+score variance suggests a broader grading distribution, further 
+reducing alignment with BERT. 
+To further analyse the differences among models, kernel 
+density estimation (KDE) plots were used to visualize score 
+distributions. The KDE plot as shown in Fig. 1 indicates that 
+MiniLM and SBERT exhibited similar score distributions, 
+reinforcing their high correlation. RoBERTa demonstrated a 
+more concentrated distribution with distinct peaks, suggesting 
+that it tends to assign scores within specific ranges. BERT, on 
+the other hand, displayed a left skewed score distribution, 
+indicating greater variation in its scoring patterns. The KDE 
+visualization (Fig. 1) also shows that RoBERTa exhibits a more 
+scattered distribution. This suggests that RoBERTa is more 
+variable in its grading, potentially contributing to its lower 
+agreement scores with other models. 
+ 
+Fig. 1. Score distribution and variability of MiniLM, BERT, RoBERTa, and 
+SBERT 
+A standard deviation analysis of scores per response 
+revealed an average variability of 2.719 across models. This 
+suggests that while all models capture semantic similarity, there 
+are notable differences in their sensitivity to paraphrasing and 
+lexical variations. The lower variability of SBERT supports its 
+effectiveness in recognizing semantically equivalent answers 
+despite surface-level differences. 
+To assess the robustness of models against paraphrased 
+responses, a semantic sensitivity test was conducted as described 
+in the section on evaluation metrics. SBERT consistently 
+produced the highest similarity scores when comparing 
+paraphrased responses to the correct answers, followed by 
+BERT and MiniLM (Table II). RoBERTa demonstrated the 
+lowest sensitivity, indicating that it may be more reliant on exact 
+phrase matching rather than deeper semantic understanding. 
+Specifically, as it can be observed in Table II, SBERT showed 
+the highest sensitivity scores across all questions (Q1: 0.726, 
+Q2: 0.881, Q3: 0.798), followed by BERT (Q1: 0.747, Q2: 
+0.834, Q3: 0.842). MiniLM performed moderately well, while 
+RoBERTa lagged behind. These results reinforce SBERT’s fine-
+tuned ability to discern contextual meaning beyond lexical 
+overlap. 
+TABLE II.  
+SEMANTIC SENSITIVITY SCORES FOR THE FOUR 
+TRANSFORMER MODELS 
+Model 
+Q1 Score 
+Q2 Score 
+Q3 Score 
+MiniLM 
+0.673 
+0.821 
+0.776 
+BERT 
+0.747 
+0.834 
+0.842 
+RoBERTa 
+0.568 
+0.772 
+0.719 
+SBERT 
+0.726 
+0.881 
+0.798 
+ 
+The processing efficiency of each model was rigorously 
+assessed, highlighting significant differences in execution time, 
+as shown in Fig. 2. MiniLM exhibited the highest efficiency, 
+completing the grading process in just 80.06 seconds, making it 
+the most practical choice for real-time applications. SBERT, 
+while demonstrating strong semantic sensitivity, required 
+155.56 seconds, making MiniLM approximately 1.94 times 
+ 
+
+T. O. Omotehinwa et al., NIPES-Journal of Science and Technology Research, Vol. 7, Special Issue: Landmark University International Conference 
+SEB4SDG 2025, pp. 843–849 
+ 
+ 
+848 
+ 
+faster. BERT's processing time of 405.01 seconds means 
+MiniLM is about 5.06 times faster, placing BERT at a 
+disadvantage for large-scale grading tasks. RoBERTa, with the 
+longest execution time of 1359.64 seconds, is nearly 16.98 times 
+slower than MiniLM, presenting a major computational 
+bottleneck that limits its feasibility in time-sensitive 
+environments. These variations in processing time emphasize 
+the critical need for balancing efficiency and accuracy in 
+automated grading systems, particularly in large-scale 
+educational settings where timely feedback is essential. 
+ 
+Fig. 2. Comparison of processing efficiency of the transformer models, 
+showing execution time (in seconds) for MiniLM, BERT, RoBERTa, and 
+SBERT models. 
+The results indicate that SBERT provides the best balance 
+between semantic understanding, correlation with other models, 
+and processing efficiency. MiniLM also emerges as a 
+competitive alternative, offering a lightweight yet effective 
+grading approach. However, the lower agreement scores 
+between RoBERTa and other models suggest that it may require 
+further fine-tuning for optimal performance in semantic 
+similarity tasks. 
+V. CONCLUSION 
+This study demonstrated the effectiveness of transformer-
+based models in automating the grading of open-ended 
+questions, 
+addressing 
+key 
+challenges 
+of 
+subjectivity, 
+inconsistency, and inefficiency in manual assessment. By 
+evaluating MiniLM, BERT, RoBERTa, and SBERT on multiple 
+grading metrics, SBERT was identified as the most robust model 
+for capturing semantic similarity with high sensitivity and strong 
+correlation to human grading. MiniLM, while slightly less 
+sensitive, provides a practical trade-off between efficiency and 
+accuracy, making it a viable option for large-scale applications. 
+The comparative analysis highlights the significant 
+variations in model performance, particularly in agreement and 
+computational efficiency. RoBERTa, despite its complexity, 
+exhibits the highest processing time and variance in score 
+distribution, making it less suitable for real-time grading. 
+Meanwhile, the poor agreement between BERT and RoBERTa 
+underscores the need for careful model selection to ensure 
+reliable and consistent automated scoring. 
+These findings underscore the transformative potential of 
+AI-driven grading systems in educational settings. By 
+leveraging transformer-based models like SBERT and MiniLM, 
+institutions can reduce the manual grading burden, enhance 
+grading consistency, and improve the fairness of student 
+assessments. Future work will explore how human-expert 
+evaluations could be incorporated to benchmark automated 
+scoring against human grading, further validating model 
+effectiveness. Fine-tuning of models and testing on larger 
+datasets are also significant areas to explore in future work. 
+REFERENCES 
+[1] 
+O. Fagbohun, N. P. Iduwe, M. Abdullahi, A. Ifaturoti, and O. M. 
+Nwanna, “Beyond Traditional Assessment: Exploring the Impact of 
+Large Language Models on Grading Practices,” J. Artif. Intell. Mach. 
+Learn. Data Sci., vol. 2, no. 1, pp. 1–8, 2024, doi: 
+10.51219/jaimld/oluwole-fagbohun/19. 
+[2] 
+M. Messer, N. C. C. Brown, M. Kölling, and M. Shi, “Automated 
+Grading and Feedback Tools for Programming Education: A 
+Systematic Review,” ACM Trans. Comput. Educ., vol. 24, no. 1, 
+2024, doi: 10.1145/3636515. 
+[3] 
+N. Madnani, A. Loukina, A. von Davier, J. Burstein, and A. Cahill, 
+“Building Better Open-Source Tools to Support Fairness in 
+Automated Scoring,” in EACL 2017 - Ethics in Natural Language 
+Processing, Proceedings of the 1st ACL Workshop, 2017, pp. 41–52. 
+doi: 10.18653/v1/w17-1605. 
+[4] 
+H. Li, J. Gobert, and R. Dickler, “Automated assessment for scientific 
+explanations in on-line science inquiry,” in Proceedings of the 10th 
+International Conference on Educational Data Mining, EDM 2017, 
+2017, pp. 214–219. 
+[5] 
+F. Rodrigues and P. Oliveira, “A system for formative assessment 
+and monitoring of students’ progress,” Comput. Educ., vol. 76, pp. 
+30–41, 2014, doi: 10.1016/j.compedu.2014.03.001. 
+[6] 
+S. Tobler, “Smart grading: A generative AI-based tool for 
+knowledge-grounded answer evaluation in educational assessments,” 
+MethodsX, vol. 12, 2024, doi: 10.1016/j.mex.2023.102531. 
+[7] 
+A. Kashi, S. Shastri, A. R. Deshpande, J. Doreswamy, and G. 
+Srinivasa, “A Score Recommendation System Towards Automating 
+Assessment In Professional Courses,” in Proceedings - IEEE 8th 
+International Conference on Technology for Education, T4E 2016, 
+2017, pp. 140–143. doi: 10.1109/T4E.2016.036. 
+[8] 
+T. O. Omotehinwa and D. O. Oyewola, “Hyperparameter 
+Optimization of Ensemble Models for Spam Email Detection,” Appl. 
+Sci., vol. 13, no. 3, p. 1971, Feb. 2023, doi: 10.3390/APP13031971. 
+[9] 
+D. O. Oyewola, T. O. Omotehinwa, and E. G. Dada, “Consumer 
+complaints of consumer financial protection bureau via two-stage 
+residual 
+one-dimensional 
+convolutional 
+neural 
+network 
+(TSR1DCNN),” Data Inf. Manag., vol. 7, no. 4, 2023, doi: 
+10.1016/j.dim.2023.100046. 
+[10] 
+T. O. Omotehinwa, D. O. Oyewola, and G. E. Moung, “Optimizing 
+the light gradient-boosting machine algorithm for an efficient early 
+detection of coronary heart disease,” Informatics Heal., vol. 1, no. 2, 
+pp. 70–81, 2024, doi: https://doi.org/10.1016/j.infoh.2024.06.001. 
+[11] 
+M. Ariely, T. Nazaretsky, and G. Alexandron, “Machine Learning 
+and Hebrew NLP for Automated Assessment of Open-Ended 
+Questions in Biology,” Int. J. Artif. Intell. Educ., vol. 33, no. 1, pp. 
+1–34, 2023, doi: 10.1007/s40593-021-00283-x. 
+[12] 
+A. Adair, M. S. Pedro, J. Gobert, and E. Segan, “Real-Time AI-
+Driven Assessment and Scaffolding that Improves Students’ 
+Mathematical Modeling during Science Investigations,” in Lecture 
+Notes in Computer Science (including subseries Lecture Notes in 
+Artificial Intelligence and Lecture Notes in Bioinformatics), vol. 
+13916 LNAI, 2023, pp. 202–216. doi: 10.1007/978-3-031-36272-
+9_17. 
+ 
+
+T. O. Omotehinwa et al., NIPES-Journal of Science and Technology Research, Vol. 7, Special Issue: Landmark University International Conference 
+SEB4SDG 2025, pp. 843–849 
+ 
+ 
+849 
+ 
+[13] 
+Z. Zeng, L. Li, Q. Guan, D. Gašević, and G. Chen, “Generalizable 
+Automatic Short Answer Scoring via Prototypical Neural Network,” 
+Lect. Notes Comput. Sci. (including Subser. Lect. Notes Artif. Intell. 
+Lect. Notes Bioinformatics), vol. 13916 LNAI, pp. 438–449, 2023, 
+doi: 10.1007/978-3-031-36272-9_36. 
+[14] 
+I. D. Mardini G, C. G. Quintero M, C. A. Viloria N, W. S. 
+Percybrooks B, H. S. Robles N, and K. Villalba R, “A deep-learning-
+based grading system (ASAG) for reading comprehension 
+assessment by using aphorisms as open-answer-questions,” Educ. Inf. 
+Technol., vol. 29, no. 4, pp. 4565–4590, 2024, doi: 10.1007/s10639-
+023-11890-7. 
+[15] 
+F. Yavuz, Ö. Çelik, and G. Yavaş Çelik, “Utilizing large language 
+models for EFL essay grading: An examination of reliability and 
+validity in rubric-based assessments,” Br. J. Educ. Technol., 2024, 
+doi: 10.1111/bjet.13494. 
+[16] 
+R. Alonso, D. Dessí, A. Meloni, and D. Reforgiato Recupero, “A 
+novel approach for job matching and skill recommendation using 
+transformers and the O*NET database,” Big Data Res., vol. 39, 2025, 
+doi: 10.1016/j.bdr.2025.100509. 
+[17] 
+A. Qasim, G. Mehak, N. Hussain, A. Gelbukh, and G. Sidorov, 
+“Detection of Depression Severity in Social Media Text Using 
+Transformer-Based Models,” Inf., vol. 16, no. 2, 2025, doi: 
+10.3390/info16020114. 
+[18] 
+Y. Zhao, T. Xia, Y. Jiang, and Y. Tian, “Enhancing inter-sentence 
+attention for Semantic Textual Similarity,” Inf. Process. Manag., vol. 
+61, no. 1, 2024, doi: 10.1016/j.ipm.2023.103535. 
+[19] 
+L. Stankevičius and M. Lukoševičius, “Extracting Sentence 
+Embeddings from Pretrained Transformer Models,” 2024, doi: 
+https://doi.org/10.3390/app14198887. 
+[20] 
+L. H. Chang and F. Ginter, “Automatic Short Answer Grading for 
+Finnish with ChatGPT,” in Proceedings of the AAAI Conference on 
+Artificial 
+Intelligence, 
+2024, 
+pp. 
+23173–23181. 
+doi: 
+10.1609/aaai.v38i21.30363. 
+[21] 
+C. Kooli, “Artificial intelligence dissociative identity disorder 
+(AIDIS): the dark side of ChatGPT,” QScience Connect, vol. 2023, 
+no. 2, 2023, doi: 10.5339/connect.2023.2. 
+[22] 
+E. del Gobbo, A. Guarino, B. Cafarelli, and L. Grilli, “GradeAid: a 
+framework for automatic short answers grading in educational 
+contexts—design, implementation and evaluation,” Knowl. Inf. Syst., 
+vol. 65, no. 10, pp. 4295–4334, 2023, doi: 10.1007/s10115-023-
+01892-9. 
+[23] 
+R. M. Badry, M. Ali, E. Rslan, and M. R. Kaseb, “Automatic Arabic 
+Grading System for Short Answer Questions,” IEEE Access, vol. 11, 
+pp. 39457–39465, 2023, doi: 10.1109/ACCESS.2023.3267407. 
+[24] 
+M. Maslim, H. C. Wang, C. D. Putra, and Y. D. Prabowo, “A 
+Trustworthy Automated Short-Answer Scoring System Using a New 
+Dataset and Hybrid Transfer Learning Method,” Int. J. Interact. 
+Multimed. Artif. Intell., vol. 8, no. 5, pp. 37–45, 2024, doi: 
+10.9781/ijimai.2024.02.003. 
+[25] 
+I. Gambo, F. J. Abegunde, O. Gambo, R. O. Ogundokun, A. N. 
+Babatunde, and C. C. Lee, “GRAD-AI: An automated grading tool 
+for code assessment and feedback in programming course,” Educ. Inf. 
+Technol., 2024, doi: 10.1007/s10639-024-13218-5. 
+[26] 
+C. Long et al., “A Novel Evaluation Model for Assessing ChatGPT 
+on 
+Otolaryngology-Head 
+and 
+Neck 
+Surgery 
+Certification 
+Examinations: Performance Study,” JMIR Med. Educ., vol. 10, no. 1, 
+2024, doi: 10.2196/49970. 
+[27] 
+E. Latif and X. Zhai, “Fine-tuning ChatGPT for automatic scoring,” 
+Comput. 
+Educ. 
+Artif. 
+Intell., 
+vol. 
+6, 
+2024, 
+doi: 
+10.1016/j.caeai.2024.100210. 
+[28] 
+I. Chamieh, T. Zesch, and K. Giebermann, “LLMs in Short Answer 
+Scoring: Limitations and Promise of Zero-Shot and Few-Shot 
+Approaches,” in Proceedings of the 19th Workshop on Innovative 
+Use of NLP for Building Educational Applications (BEA 2024), 2024, 
+pp. 309–315. [Online]. Available: https://aclanthology.org/2024.bea-
+1.25 
+[29] 
+C. K. Jayawardena, Y. Gunathilake, and D. Ihalagedara, “Dental 
+Students’ Learning Experience: Artificial Intelligence vs Human 
+Feedback 
+on 
+Assignments,” 
+Int. 
+Dent. 
+J., 
+2025, 
+doi: 
+10.1016/j.identj.2024.12.022. 
+[30] 
+M. Bani Saad, L. Jackowska-Strumillo, and W. Bieniecki, “Hybrid 
+ANN-Based and Text Similarity Method for Automatic Short-
+Answer Grading in Polish,” Appl. Sci., vol. 15, no. 3, 2025, doi: 
+10.3390/app15031605. 
+[31] 
+T. O. Omotehinwa, “Students’ Responses to Open-Ended Questions 
+on Computing Pioneers in COS101: Introduction to Computing at 
+FUHSO, 
+Nigeria. 
+figshare. 
+Dataset.,” 
+2025. 
+doi: 
+10.6084/m9.figshare.28588556. 
+[32] 
+W. Wang, F. Wei, L. Dong, H. Bao, N. Yang, and M. Zhou, 
+“MINILM: Deep self-attention distillation for task-agnostic 
+compression of pre-trained transformers,” in NIPS’20: 34th 
+International Conference on Neural Information Processing Systems, 
+2020, pp. 5776–5788. 
+[33] 
+J. Devlin, M.-W. Chang, K. Lee, K. T. Google, and A. I. Language, 
+“BERT: Pre-training of Deep Bidirectional Transformers for 
+Language Understanding,” in Proceedings of the 2019 Conference of 
+the North American Chapter of the Association for Computational 
+Linguistics: Human Language Technologies, 2019, pp. 4171–4186. 
+[Online]. Available: https://aclanthology.org/N19-1423.pdf 
+[34] 
+Y. Liu et al., “RoBERTa: A Robustly Optimized BERT Pretraining 
+Approach,” 
+2019. 
+[Online]. 
+Available: 
+http://arxiv.org/abs/1907.11692 
+[35] 
+B. Kumar, Sheetal, V. S. Badiger, and A. Ds. Jacintha, “Sentiment 
+Analysis for Products Review based on NLP using Lexicon-Based 
+Approach and Roberta,” in Proceedings of the 2nd International 
+Conference on Intelligent and Innovative Technologies in 
+Computing, Electrical and Electronics, ICIITCEE 2024, 2024. doi: 
+10.1109/IITCEE59897.2024.10468039. 
+[36] 
+C. Özkurt, “Comparative Analysis of State-of-the-Art Q A Models: 
+BERT, RoBERTa, DistilBERT, and ALBERT on SQuAD v2 
+Dataset,” 
+Chaos 
+and 
+Fractals, 
+2024, 
+doi: 
+10.69882/adba.chf.2024073. 
+[37] 
+S. Chopra, P. Agarwal, J. Ahmed, S. S. Biswas, and A. J. Obaid, 
+“Roberta and BERT: Revolutionizing Mental Healthcare Through 
+Natural Language,” SN Comput. Sci., vol. 5, no. 7, p. 889, 2024, doi: 
+10.1007/s42979-024-03202-8. 
+[38] 
+N. Reimers and I. Gurevych, “Sentence-BERT: Sentence 
+embeddings using siamese BERT-networks,” in EMNLP-IJCNLP 
+2019 - 2019 Conference on Empirical Methods in Natural Language 
+Processing and 9th International Joint Conference on Natural 
+Language Processing, Proceedings of the Conference, 2019, pp. 
+3982–3992. doi: 10.18653/v1/d19-1410. 
+[39] 
+M. L. McHugh, “Interrater reliability: the kappa statistic,” Biochem. 
+Medica, vol. 22, no. 3, pp. 276–282, 2012. 
+ 
