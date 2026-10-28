@@ -84,25 +84,35 @@ Seluruh artikel ilmiah dalam korpus ini bertopik Automated Short Answer Grading
     URL / DOI   : https://arxiv.org/abs/2505.23818
 
 [Dokumen Anggota: NicSap (Folder: PDF/NicSap/ - 5 Dokumen)]
-11. Nama Berkas : [Nama Berkas 11]
-    Judul       : [Judul Artikel 11]
-    URL / DOI   : [URL / Sumber Artikel 11]
+11. Nama Berkas : Automatic Short Answer Grading via Multiway Attention Networks.pdf
+    Judul       : Automatic Short Answer Grading via Multiway Attention Networks
+    Penulis     : Tiaoqiao Liu, Wenbiao Ding, Zhiwei Wang, Jiliang Tang, Gale Yan Huang, Zitao Liu (2019)
+    Publikasi   : arXiv Preprint (arXiv:1909.10166)
+    URL / DOI   : https://arxiv.org/abs/1909.10166
 
-12. Nama Berkas : [Nama Berkas 12]
-    Judul       : [Judul Artikel 12]
-    URL / DOI   : [URL / Sumber Artikel 12]
+12. Nama Berkas : Automatic Short Math Answer Grading via In-context Meta-learning.pdf
+    Judul       : Automatic Short Math Answer Grading via In-context Meta-learning
+    Penulis     : Mengxue Zhang, Sami Baral, Neil Heffernan, Andrew Lan (2022)
+    Publikasi   : arXiv Preprint (arXiv:2205.15219)
+    URL / DOI   : https://arxiv.org/abs/2205.15219
 
-13. Nama Berkas : [Nama Berkas 13]
-    Judul       : [Judul Artikel 13]
-    URL / DOI   : [URL / Sumber Artikel 13]
+13. Nama Berkas : Fast and Easy Short Answer Grading with High Accuracy.pdf
+    Judul       : Fast and Easy Short Answer Grading with High Accuracy
+    Penulis     : Md Arafat Sultan, Cristobal Salazar, Tamara Sumner (2016)
+    Publikasi   : Proceedings of the 2016 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies (NAACL-HLT 2016), pp. 1070-1075
+    URL / DOI   : https://aclanthology.org/N16-1123/
 
-14. Nama Berkas : [Nama Berkas 14]
-    Judul       : [Judul Artikel 14]
-    URL / DOI   : [URL / Sumber Artikel 14]
+14. Nama Berkas : Grade Guard A Smart System for Short Answer Automated Grading.pdf
+    Judul       : Grade Guard: A Smart System for Short Answer Automated Grading
+    Penulis     : Niharika Dadu, Harsh Vardhan Singh, Romi Banerjee (2025)
+    Publikasi   : arXiv Preprint (arXiv:2504.01253)
+    URL / DOI   : https://arxiv.org/abs/2504.01253
 
-15. Nama Berkas : [Nama Berkas 15]
-    Judul       : [Judul Artikel 15]
-    URL / DOI   : [URL / Sumber Artikel 15]
+15. Nama Berkas : Survey on Automated Short Answer Grading with Deep Learning from Word Embeddings to Transformers.pdf
+    Judul       : Survey on Automated Short Answer Grading with Deep Learning: from Word Embeddings to Transformers
+    Penulis     : Stefan Haller, Adina Aldea, Christin Seifert, Nicola Strisciuglio (2022)
+    Publikasi   : arXiv Preprint (arXiv:2204.03503)
+    URL / DOI   : https://arxiv.org/abs/2204.03503
 
 
 3. STRUKTUR BERKAS DAN DOKUMEN YANG DIBUTUHKAN

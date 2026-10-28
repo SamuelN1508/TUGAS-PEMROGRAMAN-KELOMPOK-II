@@ -1,0 +1,351 @@
+Automatic Short Answer Grading via Multiway
+Attention Networks
+Tiaoqiao Liu1, Wenbiao Ding1, Zhiwei Wang⋆2, Jiliang Tang2, Gale Yan
+Huang1, and Zitao Liu⋆⋆1
+1 TAL AI Lab, Beijing, China
+{liutianqiao,dingwenbiao,galehuang,liuzitao}@100tal.com
+2 Data Science and Engineering Lab, Michigan State University, USA
+{wangzh65,tangjili}@msu.edu
+Abstract. Automatic short answer grading (ASAG), which autonomously
+score student answers according to reference answers, provides a cost-
+eﬀective and consistent approach to teaching professionals and can re-
+duce their monotonous and tedious grading workloads. However, ASAG
+is a very challenging task due to two reasons: (1) student answers are
+made up of free text which requires a deep semantic understanding; and
+(2) the questions are usually open-ended and across many domains in K-
+12 scenarios. In this paper, we propose a generalized end-to-end ASAG
+learning framework which aims to (1) autonomously extract linguistic in-
+formation from both student and reference answers; and (2) accurately
+model the semantic relations between free-text student and reference an-
+swers in open-ended domain. The proposed ASAG model is evaluated on
+a large real-world K-12 dataset and can outperform the state-of-the-art
+baselines in terms of various evaluation metrics.
+1
+Introduction
+Assessing the knowledge acquired by students is one of the most important as-
+pects of the learning process as it provides feedback to help students correct
+their misunderstanding of knowledge and improves their overall learning perfor-
+mance. Traditionally, the assessing paradigm is often conducted by instructors
+or teachers. However, this access paradigm is not suitable in many cases espe-
+cially when teaching resources are not readily available. To address this gap,
+many computer-assisted assessment approaches are developed to automate the
+assessment process [1].
+One speciﬁc task, automatic short answer grading (ASAG), whose objective
+is to automatically score the free-text answers from students according to the
+corresponding reference answer [9], has attracted great attentions from a variety
+of research communities and some promising results have been already obtained
+[7,8,5,9,10]. However, ASAG still remains challenging mainly for two reasons.
+⋆Work was done when the authors did internship in TAL AI Lab
+⋆⋆Corresponding Author: Zitao Liu
+arXiv:1909.10166v1  [cs.AI]  23 Sep 2019
+
+2
+T. Liu et al.
+Firstly, the student answers are expressed in diﬀerent ways of free texts. Thus,
+it requires the ASAG approach to have a deep semantic understanding of the
+student answers. Secondly, the questions or assessments (and the corresponding
+reference answers) usually are open-ended and across diﬀerent domains. The
+ASAG approach should be general and applicable into diﬀerent scenarios.
+In this paper, to address challenges above, we take the advantage of recent
+advances in natural language processing ﬁeld [12,2] and propose a deep learning
+framework to tackle the ASAG problem in an end-to-end approach. Speciﬁcally,
+our framework utilizes attention mechanisms to understand the semantics of
+student and reference answers with most relevant information and is very ﬂex-
+ible and eﬃcient as it can be easily extended with extra neuron layers while
+still maintaining fast training speed thanks to its high parallelization ability.
+Our main contributions are summarized as follows: (1) We propose an end-to-
+end approach that does not require any feature engineering eﬀort to tackle the
+short answer grading problem; (2)We develop a novel framework that is able
+to modeling the relation between student and reference answers by accurately
+identifying matching information and understanding the semantic meaning; and
+(3) The proposed framework can be used in a wide range of domains and is easily
+scalable for large-scale datasets. It is demonstrated on a large-scale real-world
+dataset collected from millions of K-12 students.
+2
+Our Approach
+In this section, we introduce our proposed framework, the overall structure is
+shown in Figure 1. Before detailing each component next, we ﬁrst introduce the
+notations. We use bold lower case letters for vectors and bold upper case letters
+for matrices. We use subscript to represent the vector index, which is the index
+of word in each sentence in most cases. We also use superscript to represent the
+category of vectors.
+Transformer Layer. The input of the transformer layer is the student and refer-
+ence answer, which are two sequences of words and denoted as {wq
+1, wq
+2, · · · , wq
+n}
+and {wp
+1, wp
+2, · · · , wp
+n}, respectively, where {wq
+i } and {wp
+i } are the pre-trained
+word embeddings. Next, the transformer [12] model is applied as: {h∗
+1, h∗
+2, · · · , h∗
+n}
+= transformer(w∗
+1, w∗
+2, · · · , w∗
+n), where ∗∈{p, q} and each {hq
+i } and {hp
+i } are
+the word embeddings that contain its contextual sentence information in the
+student and reference answers, respectively.
+Multiway Attention. We design the multiway attention layer to capture the
+relations between student and reference answers. Speciﬁcally, it consists of two
+blocks. The ﬁrst is self-attention block where each h∗
+i will attend every h∗
+j, j ∈
+{1, 2, · · · , n} to obtain new representation s∗
+i , ∗∈{p, q}. The second is cross-
+attention block in which each hq
+i will attend every hp
+j, j ∈{1, 2, · · · , n} to ob-
+tain another set of new representations ht
+i, t ∈{a, s, m, d}, where a, s, m, d are
+addictive, subtractive, multiplicative, and dot-product attention mechanisms,
+respectively [11].
+
+Automatic Short Answer Grading via Multiway Attention Networks
+3
+Transformer
+wq
+1 wq
+2
+wq
+n
+…
+wp
+1 wp
+2
+wp
+n
+…
+…
+hq
+1
+hq
+2
+hq
+n
+…
+hp
+1
+hp
+2
+hp
+n
+Transformer
+…
+sq
+1
+sq
+2
+sq
+n
+…
+sp
+1
+sp
+2
+sp
+n
+…
+…
+…
+…
+…
+hm
+1
+hm
+2
+hm
+n
+…
+hd
+1
+hd
+2
+hd
+n
+…
+ha
+1
+ha
+2
+ha
+n
+…
+hs
+1
+hs
+2
+hs
+n
+Position-wise
+Position-wise
+Position-wise
+…
+gq
+1
+gq
+2
+gq
+n
+…
+gp
+1
+gp
+2
+gp
+n
+…
+gc
+1
+gc
+2
+gc
+n
+…
+Transformer
+Self-Attention
+Self-Attention
+Cross-Attention
+Transformer  
+Layer
+Multiway  
+Attention
+Inside  
+Aggregation
+Attention Pooling
+Multilayer Perceptron
+Prediction 
+Layer
+Student Answer
+Reference Answer
+…
+z1
+z2
+zn
+Fig. 1: The overview of our model (better viewed in color).
+Inside Aggregation. This layer is designed to aggregate multiway attention
+layer outputs to a single representation z. Speciﬁcally, we ﬁrst concatenate the
+outputs from cross-attention and self-attention blocks by positions respectively
+and feed them to diﬀerent position-wise feed forward networks to obtain the com-
+pressed representations g∗
+i , ∗∈{p, q, c}, where p, q, c represent student answer
+sequence, reference answer sequence, and cross-attention sequence, respectively.
+We concatenate the outputs g∗
+i by positions and after another Transformer
+block, we get new sequence representation Z = transformer([gp
+i , gq
+i , gc
+i ]), i ∈
+{1, 2, · · · , n} which contains the information in student and reference answers
+and the relations between them.
+Prediction Layer. The evaluation of student answer will be produced by this
+layer. Speciﬁcally, we ﬁrst convert the aggregated sequence representation Z to
+a ﬁxed-length vector with self-attention pooling layer. This transformation is
+deﬁned as: x = softmax(wz
+1tanh(Wz
+2ZT))Z, where wz
+1 and Wz
+2 are learned
+parameters during training step. Then we build a feed forward network that
+takes x as input and outputs a two-dimensional vector. The output vector is
+sent to a softmax function to obtain the ﬁnal probabilistic evaluation vector.
+The ﬁrst entry gives the probability of wrong answer while the second entry
+gives right answer probability. The objective is to minimize the cross entropy of
+the relevance labels.
+
+4
+T. Liu et al.
+3
+Experiments
+In this section, we conduct experiments on a large real-world educational data,
+which contains 120,000 pairs of student answers and question analysis from an
+online education platform, each labeled with binary value indicating whether the
+student has the right answer. The positive and negative instances are balanced
+and we randomly select 30,000 samples as our test data and use the rest for val-
+idation and training. The hyperparameters of our model are selected by internal
+cross validation. We use both AUC and accuracy as our evaluation metrics and
+for both metrics, a higher value indicates better performance.
+We compare our model with several state-of-the-art baselines. More speciﬁ-
+cally, we choose: (1) Logistic regression (LR). (2) Gradient boosted decision tree
+(GBDT) [3,13]. (3) Multichannel convolutional neural networks (TextCNN) [4].
+(4) Sentence embedding by Bidirectional Transformer block (Bi-Transformer) [12].
+(5) Multiway Attention Network (MAN) [11]. and (6) Manhattan LSTM with
+max pooling (MaLSTM) [6].
+3.1
+Experimental Results
+We report the experimental results in Table 1. From the table, we observe that
+our model outperforms all of the baselines. We argue that this is because our
+model is able to eﬀectively capture the semantic information between student
+and reference answers. This is conﬁrmed by the fact that MAN shows the su-
+perior performance among all baselines, as it not only aggregates sentence in-
+formation within Transformer block, but matches words in both query sentence
+and answer sentence from multiple attention functions.
+Table 1: ASAG performance comparison on a real-world K-12 dataset.
+LR
+GBDT TextCNN Bi-Transformer MaLSTM MAN Our
+Accuracy 0.8297 0.8628 0.8772
+0.8813
+0.8825
+0.8808 0.8899
+AUC
+0.8808 0.9287 0.9312
+0.9335
+0.9375
+0.9365 0.9444
+4
+Conclusion
+In this paper we present our multi-way attention network for automatic short
+answer grading. We use transformer blocks and attention mechanisms to extract
+answer matching information. To comprehensively capture the semantic rela-
+tions between the reference answer and the student answers, we apply multiway
+attention functions instead of single attention channel. Experiment results on a
+large real-world education dataset demonstrate the eﬀectiveness of the proposed
+framework. There are several directions that need further exploration. We may
+use one attention mechanism with multiple heads instead of multiple attention
+mechanisms and we may replace transformer block with other type of sentence
+encoder like self-attention network or hierarchical attention network.
+
+Automatic Short Answer Grading via Multiway Attention Networks
+5
+References
+1. Daradoumis, T., Bassi, R., Xhafa, F., Caball´e, S.: A review on massive e-learning
+(mooc) design, delivery and assessment. In: P2P, Parallel, Grid, Cloud and Inter-
+net Computing (3PGCIC), 2013 Eighth International Conference on. pp. 208–213.
+IEEE (2013)
+2. Devlin, J., Chang, M.W., Lee, K., Toutanova, K.: Bert: Pre-training of deep bidirec-
+tional transformers for language understanding. arXiv preprint arXiv:1810.04805
+(2018)
+3. Friedman, J.H.: Stochastic gradient boosting (1999)
+4. Kim, Y.: Convolutional neural networks for sentence classiﬁcation. arXiv preprint
+arXiv:1408.5882 (2014)
+5. Mitchell, T., Russell, T., Broomhead, P., Aldridge, N.: Towards robust comput-
+erised marking of free-text responses (2002)
+6. Mueller, J., Thyagarajan, A.: Siamese recurrent architectures for learning sentence
+similarity. In: AAAI. vol. 16, pp. 2786–2792 (2016)
+7. Nielsen, R.D., Ward, W., Martin, J.H.: Recognizing entailment in intelligent tu-
+toring systems. Natural Language Engineering 15(4), 479–501 (2009)
+8. Ramachandran, L., Cheng, J., Foltz, P.: Identifying patterns for short answer scor-
+ing using graph-based lexico-semantic text matching. In: Proceedings of the Tenth
+Workshop on Innovative Use of NLP for Building Educational Applications. pp.
+97–106 (2015)
+9. Saha, S., Dhamecha, T.I., Marvaniya, S., Sindhgatta, R., Sengupta, B.: Sen-
+tence level or token level features for automatic short answer grading?: Use both.
+In: International Conference on Artiﬁcial Intelligence in Education. pp. 503–517.
+Springer (2018)
+10. Sultan, M.A., Salazar, C., Sumner, T.: Fast and easy short answer grading with
+high accuracy. In: Proceedings of the 2016 Conference of the North American
+Chapter of the Association for Computational Linguistics: Human Language Tech-
+nologies. pp. 1070–1075 (2016)
+11. Tan, C., Wei, F., Wang, W., Lv, W., Zhou, M.: Multiway attention networks for
+modeling sentence pairs. In: IJCAI. pp. 4411–4417 (2018)
+12. Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A.N., Kaiser,
+ L., Polosukhin, I.: Attention is all you need. In: Advances in Neural Information
+Processing Systems. pp. 5998–6008 (2017)
+13. Ye, J., Chow, J.H., Chen, J., Zheng, Z.: Stochastic gradient boosted distributed
+decision trees. In: CIKM 2009 (2009)
